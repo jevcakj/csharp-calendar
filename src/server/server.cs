@@ -1,5 +1,4 @@
-﻿using calendar_server;
-using System;
+﻿using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Net;
@@ -23,6 +22,7 @@ namespace CalendarServer
         public void StartLoop() 
         {
             listener.Start();
+            Console.WriteLine("Server started.");
             while (true)
             {
                 var request = listener.GetContext();
@@ -31,11 +31,88 @@ namespace CalendarServer
 
         }
 
-        private void HandleRequest(HttpListenerContext context)
+        private void HandleRequest(HttpListenerContext ctx)
         {
-            var request = context.Request;
-            Console.WriteLine($"handling request: {request.Url}");
+            var rq = ctx.Request;
+            var rsp = ctx.Response;
+            
+            if (rq.HttpMethod != HttpMethod.Get.Method &&
+               rq.HttpMethod != HttpMethod.Post.Method &&
+               rq.HttpMethod != HttpMethod.Delete.Method)
+            {
+                rsp.StatusCode = (int)HttpStatusCode.BadRequest;
+                var buffer = Encoding.UTF8.GetBytes("nope");
+                rsp.OutputStream.Write(buffer, 0, buffer.Length);
+                rsp.OutputStream.Close();
+                rsp.ContentLength64 = buffer.Length;
+                rsp.Close();
+                return;
+            }
+
+            Console.WriteLine($"handling request: {rq.Url}");
+
+            if(rq.Url == null)
+            {
+                rsp.StatusCode = (int)HttpStatusCode.BadRequest;
+                rsp.Close();
+                return;
+            }
+
+            if(rq.HttpMethod == HttpMethod.Post.Method && rq.Url.AbsolutePath == "/User/Register/")
+            {
+                RegisterUser(ctx);
+                return;
+            }
+
+            //check authentication
+
+            if(rq.HttpMethod == HttpMethod.Get.Method)
+            {
+                GetEvent(ctx);
+                return;
+            }
+            if(rq.HttpMethod == HttpMethod.Post.Method)
+            {
+                if (rq.Url.AbsolutePath == "/User/Change")
+                {
+                    ChangeUserCredentials(ctx);
+                }
+                else
+                {
+                    SaveEvent(ctx);
+                }
+                return;
+            }
+            if(rq.HttpMethod == HttpMethod.Delete.Method)
+            {
+                DeleteEvent(ctx);
+                return;
+            }
         }
 
+        public void GetEvent(HttpListenerContext ctx)
+        {
+
+        }
+
+        public void SaveEvent(HttpListenerContext ctx)
+        {
+
+        }
+
+        public void DeleteEvent(HttpListenerContext ctx)
+        {
+
+        }
+
+        public void RegisterUser(HttpListenerContext ctx)
+        {
+
+        }
+
+        public void ChangeUserCredentials(HttpListenerContext ctx)
+        {
+
+        }
     }
 }
