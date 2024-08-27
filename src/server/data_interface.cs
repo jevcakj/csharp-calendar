@@ -12,7 +12,7 @@ namespace CalendarServer
     public interface IData
     {
         public void CreateUser(User user);
-        public User GetUser(string name);
+        public bool AuthenticateUser(User user);
         public void SaveEvent(CalendarEvent e);
         public void DeleteEvent(DateTime dateTime, int id);
         //?

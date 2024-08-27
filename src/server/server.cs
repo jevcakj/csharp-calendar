@@ -1,4 +1,5 @@
-﻿using System;
+﻿using CalendarCommon;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Net;
@@ -17,6 +18,7 @@ namespace CalendarServer
             this.data = data ?? new FileDataStorage();
             listener = new HttpListener();
             listener.Prefixes.Add($"http://localhost:{port}/");
+            listener.AuthenticationSchemes = AuthenticationSchemes.Basic;
         }
 
         public void StartLoop() 
@@ -46,6 +48,7 @@ namespace CalendarServer
                 rsp.OutputStream.Close();
                 rsp.ContentLength64 = buffer.Length;
                 rsp.Close();
+                Console.WriteLine("bad request");
                 return;
             }
 
@@ -61,16 +64,28 @@ namespace CalendarServer
             if(rq.HttpMethod == HttpMethod.Post.Method && rq.Url.AbsolutePath == "/User/Register/")
             {
                 RegisterUser(ctx);
+                rsp.Close();
+                return;
+            }
+            
+            var id = (HttpListenerBasicIdentity)ctx.User.Identity;
+            User user = new() { Name = id.Name, Password = id.Password };
+            Console.WriteLine($"name: {user.Name}\npass: {user.Password}");
+
+            if (!data.AuthenticateUser(user))
+            {
+                rsp.StatusCode = (int)HttpStatusCode.Unauthorized;
+                rsp.Close();
                 return;
             }
 
-            //check authentication
-
-            if(rq.HttpMethod == HttpMethod.Get.Method)
+            if (rq.HttpMethod == HttpMethod.Get.Method)
             {
                 GetEvent(ctx);
+                rsp.Close();
                 return;
             }
+
             if(rq.HttpMethod == HttpMethod.Post.Method)
             {
                 if (rq.Url.AbsolutePath == "/User/Change")
@@ -83,6 +98,7 @@ namespace CalendarServer
                 }
                 return;
             }
+
             if(rq.HttpMethod == HttpMethod.Delete.Method)
             {
                 DeleteEvent(ctx);
