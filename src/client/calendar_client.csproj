@@ -7,4 +7,9 @@
     <Nullable>enable</Nullable>
   </PropertyGroup>
 
+  <ItemGroup>
+    <Compile Include="..\common\event.cs" Link="event.cs" />
+    <Compile Include="..\common\User.cs" Link="User.cs" />
+  </ItemGroup>
+
 </Project>
