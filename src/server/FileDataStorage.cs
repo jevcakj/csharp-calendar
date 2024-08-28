@@ -41,6 +41,27 @@ namespace CalendarServer
             File.WriteAllText(Path.Join(path, "userInfo"), JsonSerializer.Serialize(user));
             return true;
         }
+        public bool UpdateUserName(User oldUser, User newUser)
+        {
+            Console.WriteLine("update username");
+            var oldPath = Path.Join(rootDirectory, oldUser.name);
+            var newPath = Path.Join(rootDirectory, newUser.name);
+            if (Path.Exists(newPath))
+            {
+                return false;
+            }
+            Directory.Move(oldPath, newPath);
+            File.WriteAllText(Path.Join(newPath, "userInfo"), JsonSerializer.Serialize(newUser));
+            return true;
+        }
+        public bool UpdateUserPassword(User oldUser, User newUser)
+        {
+            Console.WriteLine("update password");
+            oldUser.password = newUser.password;
+            var path = Path.Join(rootDirectory , oldUser.name, "userInfo");
+            File.WriteAllText(path, JsonSerializer.Serialize(oldUser));
+            return true;
+        }
         public bool AuthenticateUser(User user)
         {
             var path = Path.Join(rootDirectory, user.name);

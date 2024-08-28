@@ -12,6 +12,8 @@ namespace CalendarServer
     public interface IData
     {
         public bool CreateUser(User user);
+        public bool UpdateUserName(User oldUser, User newUser);
+        public bool UpdateUserPassword(User oldUser, User newUser);
         public bool AuthenticateUser(User user);
         public void SaveEvent(CalendarEvent e);
         public void DeleteEvent(DateTime dateTime, int id);

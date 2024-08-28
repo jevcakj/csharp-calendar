@@ -1,4 +1,4 @@
-﻿using CalendarCommon;
+﻿using Microsoft.Win32;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -7,6 +7,9 @@ using System.Security.Cryptography;
 using System.Text;
 using System.Text.Json;
 using System.Threading.Tasks;
+
+using CalendarCommon;
+
 
 namespace CalendarServer
 {
@@ -81,42 +84,42 @@ namespace CalendarServer
 
             if (rq.HttpMethod == HttpMethod.Get.Method)
             {
-                GetEvent(ctx);
+                GetEvent(ctx, user);
                 rsp.Close();
                 return;
             }
 
             if(rq.HttpMethod == HttpMethod.Post.Method)
             {
-                if (rq.Url.AbsolutePath == "/User/Change/")
+                if (rq.Url.Segments[1] == "User/" && rq.Url.Segments[2] == "Change/")
                 {
-                    ChangeUserCredentials(ctx);
+                    ChangeUserCredentials(ctx, user);
                 }
                 else
                 {
-                    SaveEvent(ctx);
+                    SaveEvent(ctx, user);
                 }
                 return;
             }
 
             if(rq.HttpMethod == HttpMethod.Delete.Method)
             {
-                DeleteEvent(ctx);
+                DeleteEvent(ctx, user);
                 return;
             }
         }
 
-        public void GetEvent(HttpListenerContext ctx)
+        public void GetEvent(HttpListenerContext ctx, User user)
         {
 
         }
 
-        public void SaveEvent(HttpListenerContext ctx)
+        public void SaveEvent(HttpListenerContext ctx, User user)
         {
 
         }
 
-        public void DeleteEvent(HttpListenerContext ctx)
+        public void DeleteEvent(HttpListenerContext ctx, User user)
         {
 
         }
@@ -135,12 +138,42 @@ namespace CalendarServer
             }
             rsp.StatusCode = (int)HttpStatusCode.OK;
             rsp.Close();
-            return;
         }
 
-        public void ChangeUserCredentials(HttpListenerContext ctx)
+        public void ChangeUserCredentials(HttpListenerContext ctx, User user)
         {
+            var rq = ctx.Request;
+            var rsp = ctx.Response;
+            var newUser = JsonSerializer.Deserialize<User>(rq.InputStream);
 
+            if (rq.Url.Segments[3] == "Name/")
+            {
+                if(!data.UpdateUserName(user, newUser))
+                {
+                    rsp.StatusCode = (int)HttpStatusCode.Forbidden;
+                    WriteContent(rsp, "Username is already used.");
+                    rsp.Close();
+                    return;
+                }
+            }
+            else if(rq.Url.Segments[3] == "Password/")
+            {
+                if(!data.UpdateUserPassword(user, newUser))
+                {
+                    rsp.StatusCode = (int)HttpStatusCode.BadRequest;
+                    WriteContent(rsp, "Unable to change password.");
+                    rsp.Close();
+                    return;
+                }
+            }
+            else
+            {
+                rsp.StatusCode = (int)HttpStatusCode.BadRequest;
+                rsp.Close();
+                return;
+            }
+            rsp.StatusCode = (int)HttpStatusCode.OK;
+            rsp.Close();
         }
 
         private void WriteContent(HttpListenerResponse rsp, string content)
