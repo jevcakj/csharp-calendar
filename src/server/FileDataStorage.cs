@@ -30,15 +30,27 @@ namespace CalendarServer
             Console.WriteLine($"Data dir: {rootDirectory}");
 
         }
-        public void CreateUser(User user)
+        public bool CreateUser(User user)
         {
-            var path = Path.Join(rootDirectory, user.Name);
+            var path = Path.Join(rootDirectory, user.name);
+            if (Path.Exists(path))
+            {
+                return false;
+            }
             Directory.CreateDirectory(path);
             File.WriteAllText(Path.Join(path, "userInfo"), JsonSerializer.Serialize(user));
+            return true;
         }
         public bool AuthenticateUser(User user)
         {
-            return true;
+            var path = Path.Join(rootDirectory, user.name);
+            if (!Path.Exists(path))
+            {
+                return false;
+            }
+            path = Path.Join(path, "userInfo");
+            var userCheck = JsonSerializer.Deserialize<User>(File.ReadAllText(path));
+            return user.password == userCheck.password;
         }
 
         public void DeleteEvent(DateTime dateTime, int id)

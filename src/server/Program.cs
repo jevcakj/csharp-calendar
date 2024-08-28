@@ -6,7 +6,7 @@ namespace CalendarServer
     {
         static void Main(string[] args)
         {
-            server server = new();
+            Server server = new();
             server.StartLoop();
         }
     }

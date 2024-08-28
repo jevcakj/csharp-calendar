@@ -3,17 +3,19 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Net;
+using System.Security.Cryptography;
 using System.Text;
+using System.Text.Json;
 using System.Threading.Tasks;
 
 namespace CalendarServer
 {
-    public class server
+    public class Server
     {
         private HttpListener listener;
         private IData data;
 
-        public server(int port = 8080, IData? data = null)
+        public Server(int port = 8080, IData? data = null)
         {
             this.data = data ?? new FileDataStorage();
             listener = new HttpListener();
@@ -43,10 +45,7 @@ namespace CalendarServer
                rq.HttpMethod != HttpMethod.Delete.Method)
             {
                 rsp.StatusCode = (int)HttpStatusCode.BadRequest;
-                var buffer = Encoding.UTF8.GetBytes("nope");
-                rsp.OutputStream.Write(buffer, 0, buffer.Length);
-                rsp.OutputStream.Close();
-                rsp.ContentLength64 = buffer.Length;
+                WriteContent(rsp, "nope");
                 rsp.Close();
                 Console.WriteLine("bad request");
                 return;
@@ -69,12 +68,13 @@ namespace CalendarServer
             }
             
             var id = (HttpListenerBasicIdentity)ctx.User.Identity;
-            User user = new() { Name = id.Name, Password = id.Password };
-            Console.WriteLine($"name: {user.Name}\npass: {user.Password}");
+            User user = new() { name = id.Name, password = id.Password };
+            Console.WriteLine($"name: {user.name}\npass: {user.password}");
 
             if (!data.AuthenticateUser(user))
             {
                 rsp.StatusCode = (int)HttpStatusCode.Unauthorized;
+                WriteContent(rsp, "Invalid credentials.");
                 rsp.Close();
                 return;
             }
@@ -88,7 +88,7 @@ namespace CalendarServer
 
             if(rq.HttpMethod == HttpMethod.Post.Method)
             {
-                if (rq.Url.AbsolutePath == "/User/Change")
+                if (rq.Url.AbsolutePath == "/User/Change/")
                 {
                     ChangeUserCredentials(ctx);
                 }
@@ -123,12 +123,33 @@ namespace CalendarServer
 
         public void RegisterUser(HttpListenerContext ctx)
         {
-
+            var rq = ctx.Request;
+            var rsp = ctx.Response;
+            var user = JsonSerializer.Deserialize<User>(rq.InputStream);
+            if(!data.CreateUser(user))
+            {
+                rsp.StatusCode = (int)HttpStatusCode.Forbidden;
+                WriteContent(rsp, "Username is already used.");
+                rsp.Close();
+                return;
+            }
+            rsp.StatusCode = (int)HttpStatusCode.OK;
+            rsp.Close();
+            return;
         }
 
         public void ChangeUserCredentials(HttpListenerContext ctx)
         {
 
+        }
+
+        private void WriteContent(HttpListenerResponse rsp, string content)
+        {
+            var buffer = Encoding.UTF8.GetBytes(content);
+            rsp.OutputStream.Write(buffer, 0, buffer.Length);
+            rsp.OutputStream.Close();
+            rsp.ContentLength64 = buffer.Length;
+            rsp.ContentEncoding = Encoding.UTF8;
         }
     }
 }
