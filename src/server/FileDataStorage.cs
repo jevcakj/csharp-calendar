@@ -39,6 +39,7 @@ namespace CalendarServer
             }
             Directory.CreateDirectory(path);
             File.WriteAllText(Path.Join(path, "userInfo"), JsonSerializer.Serialize(user));
+            File.WriteAllText(Path.Join(path, "IDCounter"), "0");
             return true;
         }
         public bool UpdateUserName(User oldUser, User newUser)
@@ -74,19 +75,44 @@ namespace CalendarServer
             return user.password == userCheck.password;
         }
 
-        public void DeleteEvent(DateTime dateTime, int id)
+        public void DeleteEvent(DateTime dateTime, int id, User user)
+        {
+            var path = Path.Join(rootDirectory, user.name, $"{dateTime.Year}", $"{dateTime.Month}", $"{dateTime.Day}", $"{id}");
+            if (Path.Exists(path))
+            {
+                File.Delete(path);
+                Console.WriteLine($"Event deleted: {path}");
+            }
+        }
+
+        public List<CalendarEvent> GetEvents(Expression e, User user)
         {
             throw new NotImplementedException();
         }
 
-        public List<CalendarEvent> GetEvents(Expression e)
+        public int SaveEvent(CalendarEvent e, User user)
         {
-            throw new NotImplementedException();
+            var path = Path.Join(rootDirectory, user.name);
+            int id = GetNewEventId(user);
+            e.id = id;
+            DateTime dateTime = (DateTime)e.dateTime;
+            path = Path.Join(path, $"{dateTime.Year}", $"{dateTime.Month}", $"{dateTime.Day}");
+            if (!Directory.Exists(path))
+            {
+                Directory.CreateDirectory(path);
+            }
+            path = Path.Join(path, $"{id}");
+            File.WriteAllText(path, JsonSerializer.Serialize(e));
+            Console.WriteLine($"Event saved: {path}");
+            return id;
         }
 
-        public void SaveEvent(CalendarEvent e)
+        private int GetNewEventId(User user)
         {
-            throw new NotImplementedException();
+            var path = Path.Join(rootDirectory, user.name, "IDCounter");
+            var id = int.Parse(File.ReadAllText(path));
+            File.WriteAllText(path, $"{++id}");
+            return id;
         }
     }
 }

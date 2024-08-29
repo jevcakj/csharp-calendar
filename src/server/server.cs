@@ -35,7 +35,6 @@ namespace CalendarServer
                 var request = listener.GetContext();
                 Task.Run(() => { HandleRequest(request); });
             }
-
         }
 
         private void HandleRequest(HttpListenerContext ctx)
@@ -99,6 +98,7 @@ namespace CalendarServer
                 {
                     SaveEvent(ctx, user);
                 }
+                rsp.Close();
                 return;
             }
 
@@ -116,12 +116,25 @@ namespace CalendarServer
 
         public void SaveEvent(HttpListenerContext ctx, User user)
         {
+            var rq = ctx.Request;
+            var rsp = ctx.Response;
 
+            var calEvent = JsonSerializer.Deserialize<CalendarEvent>(rq.InputStream);
+            int id = data.SaveEvent(calEvent, user);
+            WriteContent(rsp, id);
+            rsp.Close();
         }
 
         public void DeleteEvent(HttpListenerContext ctx, User user)
         {
+            var rq = ctx.Request;
+            var rsp = ctx.Response;
 
+            var path = rq.Url.AbsolutePath.Split('/');
+            DateTime dateTime = new(int.Parse(path[1]), int.Parse(path[2]), int.Parse(path[3]));
+            int id = int.Parse(path[4]);
+            data.DeleteEvent(dateTime, id, user);
+            rsp.Close();
         }
 
         public void RegisterUser(HttpListenerContext ctx)
@@ -136,7 +149,6 @@ namespace CalendarServer
                 rsp.Close();
                 return;
             }
-            rsp.StatusCode = (int)HttpStatusCode.OK;
             rsp.Close();
         }
 
@@ -184,5 +196,7 @@ namespace CalendarServer
             rsp.ContentLength64 = buffer.Length;
             rsp.ContentEncoding = Encoding.UTF8;
         }
+
+        private void WriteContent(HttpListenerResponse rsp, int content) => WriteContent(rsp, $"{content}");
     }
 }

@@ -15,9 +15,9 @@ namespace CalendarServer
         public bool UpdateUserName(User oldUser, User newUser);
         public bool UpdateUserPassword(User oldUser, User newUser);
         public bool AuthenticateUser(User user);
-        public void SaveEvent(CalendarEvent e);
-        public void DeleteEvent(DateTime dateTime, int id);
+        public int SaveEvent(CalendarEvent e, User user);
+        public void DeleteEvent(DateTime dateTime, int id, User user);
         //?
-        public List<CalendarEvent> GetEvents(Expression e);
+        public List<CalendarEvent> GetEvents(Expression e, User user);
     }
 }
