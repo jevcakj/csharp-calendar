@@ -105,13 +105,41 @@ namespace CalendarServer
             if(rq.HttpMethod == HttpMethod.Delete.Method)
             {
                 DeleteEvent(ctx, user);
+                rsp.Close();
                 return;
             }
         }
 
         public void GetEvent(HttpListenerContext ctx, User user)
         {
+            var rq = ctx.Request;
+            var rsp = ctx.Response;
 
+            var path = rq.Url.AbsolutePath.Split('/', StringSplitOptions.RemoveEmptyEntries);
+            DateTime dateTime = new(int.Parse(path[0]), int.Parse(path[1]), int.Parse(path[2]));
+            string content;
+            if(path.Length > 3)
+            {
+                int id = int.Parse(path[3]);
+                CalendarEvent calEvent;
+                if(!data.GetEvent(dateTime, id, user, out calEvent))
+                {
+                    rsp.StatusCode = (int)HttpStatusCode.NotFound;
+                    return;
+                }
+                content = JsonSerializer.Serialize(calEvent);
+            }
+            else
+            {
+                List<CalendarEvent> calendarEvents;
+                if(!data.GetEvents(dateTime, user, out calendarEvents)){
+                    rsp.StatusCode = (int)HttpStatusCode.NotFound;
+                    return;
+                }
+                content = JsonSerializer.Serialize(calendarEvents);
+            }
+            WriteContent(rsp, content);
+            rsp.StatusCode = (int)HttpStatusCode.OK;
         }
 
         public void SaveEvent(HttpListenerContext ctx, User user)
@@ -122,7 +150,6 @@ namespace CalendarServer
             var calEvent = JsonSerializer.Deserialize<CalendarEvent>(rq.InputStream);
             int id = data.SaveEvent(calEvent, user);
             WriteContent(rsp, id);
-            rsp.Close();
         }
 
         public void DeleteEvent(HttpListenerContext ctx, User user)
@@ -130,11 +157,10 @@ namespace CalendarServer
             var rq = ctx.Request;
             var rsp = ctx.Response;
 
-            var path = rq.Url.AbsolutePath.Split('/');
-            DateTime dateTime = new(int.Parse(path[1]), int.Parse(path[2]), int.Parse(path[3]));
+            var path = rq.Url.AbsolutePath.Split('/', StringSplitOptions.RemoveEmptyEntries);
+            DateTime dateTime = new(int.Parse(path[0]), int.Parse(path[1]), int.Parse(path[2]));
             int id = int.Parse(path[4]);
             data.DeleteEvent(dateTime, id, user);
-            rsp.Close();
         }
 
         public void RegisterUser(HttpListenerContext ctx)
@@ -146,10 +172,8 @@ namespace CalendarServer
             {
                 rsp.StatusCode = (int)HttpStatusCode.Forbidden;
                 WriteContent(rsp, "Username is already used.");
-                rsp.Close();
                 return;
             }
-            rsp.Close();
         }
 
         public void ChangeUserCredentials(HttpListenerContext ctx, User user)
@@ -164,7 +188,6 @@ namespace CalendarServer
                 {
                     rsp.StatusCode = (int)HttpStatusCode.Forbidden;
                     WriteContent(rsp, "Username is already used.");
-                    rsp.Close();
                     return;
                 }
             }
@@ -174,18 +197,15 @@ namespace CalendarServer
                 {
                     rsp.StatusCode = (int)HttpStatusCode.BadRequest;
                     WriteContent(rsp, "Unable to change password.");
-                    rsp.Close();
                     return;
                 }
             }
             else
             {
                 rsp.StatusCode = (int)HttpStatusCode.BadRequest;
-                rsp.Close();
                 return;
             }
             rsp.StatusCode = (int)HttpStatusCode.OK;
-            rsp.Close();
         }
 
         private void WriteContent(HttpListenerResponse rsp, string content)
@@ -195,6 +215,7 @@ namespace CalendarServer
             rsp.OutputStream.Close();
             rsp.ContentLength64 = buffer.Length;
             rsp.ContentEncoding = Encoding.UTF8;
+            rsp.ContentType = "application/json";
         }
 
         private void WriteContent(HttpListenerResponse rsp, int content) => WriteContent(rsp, $"{content}");

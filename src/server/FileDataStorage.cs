@@ -85,15 +85,47 @@ namespace CalendarServer
             }
         }
 
-        public List<CalendarEvent> GetEvents(Expression e, User user)
+        public bool GetEvents(DateTime dateTime, User user, out List<CalendarEvent> calendarEvents)
         {
-            throw new NotImplementedException();
+            var path = Path.Join(rootDirectory, user.name, $"{dateTime.Year}", $"{dateTime.Month}", $"{dateTime.Day}");
+            Console.WriteLine($"Get events: {path}");
+            calendarEvents = new List<CalendarEvent>();
+            if (!Path.Exists(path))
+            {
+                return false;
+            }
+            foreach(var eventPath in Directory.GetFiles(path))
+            {
+                var calEvent = JsonSerializer.Deserialize<CalendarEvent>(File.ReadAllText(eventPath));
+                if (calEvent != null)
+                {
+                    calendarEvents.Add(calEvent);
+                }
+            }
+            return true;
+        }
+
+        public bool GetEvent(DateTime dateTime, int id, User user, out CalendarEvent calendarEvent)
+        {
+            var path = Path.Join(rootDirectory, user.name, $"{dateTime.Year}", $"{dateTime.Month}", $"{dateTime.Day}", $"{id}");
+            Console.WriteLine($"Get event: {path}");
+            if (!Path.Exists(path))
+            {
+                calendarEvent = null;
+                return false;
+            }
+            calendarEvent = JsonSerializer.Deserialize<CalendarEvent>(File.ReadAllText(path));
+            if (calendarEvent == null)
+            {
+                return false;
+            }
+            return true;
         }
 
         public int SaveEvent(CalendarEvent e, User user)
         {
             var path = Path.Join(rootDirectory, user.name);
-            int id = GetNewEventId(user);
+            int id = e.id ?? GetNewEventId(user);
             e.id = id;
             DateTime dateTime = (DateTime)e.dateTime;
             path = Path.Join(path, $"{dateTime.Year}", $"{dateTime.Month}", $"{dateTime.Day}");
