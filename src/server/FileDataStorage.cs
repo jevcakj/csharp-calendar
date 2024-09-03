@@ -13,7 +13,7 @@ namespace CalendarServer
 {
     public class FileDataStorage : IData
     {
-        private string rootDirectory;
+        public string rootDirectory { get; init; }
         public FileDataStorage(string path = "..\\..\\..\\..\\Data")
         {
             if(!Path.IsPathRooted(path) )
@@ -27,7 +27,6 @@ namespace CalendarServer
                 
             }
             rootDirectory = path;
-            Console.WriteLine($"Data dir: {rootDirectory}");
 
         }
         public bool CreateUser(User user)

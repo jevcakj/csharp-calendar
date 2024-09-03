@@ -18,9 +18,16 @@ namespace CalendarServer
         private HttpListener listener;
         private IData data;
 
-        public Server(int port = 8080, IData? data = null)
+        public Server(IData? data = null, int port = 8080)
         {
             this.data = data ?? new FileDataStorage();
+            listener = new HttpListener();
+            listener.Prefixes.Add($"http://localhost:{port}/");
+            listener.AuthenticationSchemes = AuthenticationSchemes.Basic;
+        }
+        public Server(string path, int port = 8080)
+        {
+            data = new FileDataStorage(path);
             listener = new HttpListener();
             listener.Prefixes.Add($"http://localhost:{port}/");
             listener.AuthenticationSchemes = AuthenticationSchemes.Basic;
@@ -30,6 +37,12 @@ namespace CalendarServer
         {
             listener.Start();
             Console.WriteLine("Server started.");
+            Console.WriteLine($"Data source: \n\t{((FileDataStorage)data).rootDirectory}");
+            Console.WriteLine("URI prefixes:");
+            foreach(var prefix in listener.Prefixes)
+            {
+                Console.WriteLine($"\t{prefix}");
+            }
             while (true)
             {
                 var request = listener.GetContext();
@@ -47,13 +60,11 @@ namespace CalendarServer
                rq.HttpMethod != HttpMethod.Delete.Method)
             {
                 rsp.StatusCode = (int)HttpStatusCode.BadRequest;
-                WriteContent(rsp, "nope");
+                WriteContent(rsp, "Bad request method");
                 rsp.Close();
-                Console.WriteLine("bad request");
+                Console.WriteLine("Request denied. Bad request method.");
                 return;
             }
-
-            Console.WriteLine($"handling request: {rq.Url}");
 
             if(rq.Url == null)
             {
@@ -69,9 +80,9 @@ namespace CalendarServer
                 return;
             }
             
-            var id = (HttpListenerBasicIdentity)ctx.User.Identity;
+            HttpListenerBasicIdentity id = (HttpListenerBasicIdentity)ctx.User.Identity;
             User user = new() { name = id.Name, password = id.Password };
-            Console.WriteLine($"name: {user.name}\npass: {user.password}");
+            Console.WriteLine($"User: {user.name}");
 
             if (!data.AuthenticateUser(user))
             {
