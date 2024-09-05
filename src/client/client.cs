@@ -6,7 +6,15 @@ using System.Threading.Tasks;
 
 namespace CalendarClient
 {
-    public class client
+    public class Client
     {
+        public Client()
+        {
+            
+        }
+        private IUserInterface ui;
+        private IConnection connection;
+        int viewSpan;
+        ICalendarCommand lastCommand;
     }
 }
