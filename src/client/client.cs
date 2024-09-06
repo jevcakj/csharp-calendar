@@ -10,7 +10,9 @@ namespace CalendarClient
     {
         public Client()
         {
-            
+            Dictionary<string, ICalendarCommand> commands = new Dictionary<string, ICalendarCommand>();
+            commands.Add("add", new AddEventCommand());
+            ui = new CommandLineInterface(commands);
         }
         private IUserInterface ui;
         private IConnection connection;

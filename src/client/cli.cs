@@ -3,27 +3,33 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
+using CalendarCommon;
 
 namespace CalendarClient
 {
     public class CommandLineInterface : IUserInterface
     {
+        private Dictionary<string, ICalendarCommand> commands;
+        public CommandLineInterface(Dictionary<string, ICalendarCommand> commands)
+        {
+            this.commands = commands;
+        }
         public void AddEvent()
         {
             throw new NotImplementedException();
         }
 
-        public void ChangeUserName()
+        public User ChangeUserName()
         {
             throw new NotImplementedException();
         }
 
-        public void ChangeUserPassword()
+        public User ChangeUserPassword()
         {
             throw new NotImplementedException();
         }
 
-        public void CreateUser()
+        public User CreateUser()
         {
             throw new NotImplementedException();
         }
@@ -48,7 +54,7 @@ namespace CalendarClient
             throw new NotImplementedException();
         }
 
-        public void LoginUser()
+        public User LoginUser()
         {
             throw new NotImplementedException();
         }
