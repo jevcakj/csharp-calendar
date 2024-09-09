@@ -57,7 +57,8 @@ namespace CalendarServer
             
             if (rq.HttpMethod != HttpMethod.Get.Method &&
                rq.HttpMethod != HttpMethod.Post.Method &&
-               rq.HttpMethod != HttpMethod.Delete.Method)
+               rq.HttpMethod != HttpMethod.Delete.Method &&
+               rq.HttpMethod != HttpMethod.Head.Method)
             {
                 rsp.StatusCode = (int)HttpStatusCode.BadRequest;
                 WriteContent(rsp, "Bad request method");
@@ -69,6 +70,13 @@ namespace CalendarServer
             if(rq.Url == null)
             {
                 rsp.StatusCode = (int)HttpStatusCode.BadRequest;
+                rsp.Close();
+                return;
+            }
+
+            if(rq.HttpMethod == HttpMethod.Head.Method)
+            {
+                rsp.StatusCode = (int)HttpStatusCode.OK;
                 rsp.Close();
                 return;
             }

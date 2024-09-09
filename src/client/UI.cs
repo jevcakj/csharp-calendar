@@ -9,6 +9,7 @@ namespace CalendarClient
 {
     public interface IUserInterface
     {
+        public ICalendarCommand GetInput();
         public User LoginUser();
         public void LogoutUser();
         public User CreateUser();
@@ -19,7 +20,6 @@ namespace CalendarClient
         public void EditEvent();
         public void ShowEvent();
         public void ListEvents();
-        public void ShowMessage();
-        public Task<string> GetInput();
+        public void ShowMessage(string message);
     }
 }

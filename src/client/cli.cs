@@ -10,10 +10,57 @@ namespace CalendarClient
     public class CommandLineInterface : IUserInterface
     {
         private Dictionary<string, ICalendarCommand> commands;
+        private List<ICalendarCommand> commandHistory;
+        private int commandHistoryIndexer;
         public CommandLineInterface(Dictionary<string, ICalendarCommand> commands)
         {
             this.commands = commands;
         }
+
+        public ICalendarCommand GetInput()
+        {
+                StringBuilder sb = new StringBuilder();
+                ConsoleKeyInfo key;
+
+            while (true)
+            {
+                key = Console.ReadKey();
+                if (key.Key == ConsoleKey.Enter)
+                {
+                    string commandWhole = sb.ToString();
+                    string commandName = commandWhole.Split(' ', StringSplitOptions.RemoveEmptyEntries | StringSplitOptions.TrimEntries)[0];
+                    ICalendarCommand? commandPrototype;
+                    commands.TryGetValue(commandName, out commandPrototype);
+                    if (commandPrototype != null)
+                    {
+                        ICalendarCommand command = commandPrototype.Copy();
+                        command.CommandString = commandWhole;
+                        if (command.CheckArguments())
+                        {
+                            return command;
+                        }
+                        else
+                        {
+                            ShowMessage("Invalid arguments");
+                        }
+                    }
+                    else
+                    {
+                        ShowMessage("Invalid command");
+                    }
+                }
+                else if (key.Key == ConsoleKey.Backspace)
+                {
+                    sb.Remove(sb.Length-1, 1);
+                    Console.Write('\b');
+                }
+                else
+                {
+                    sb.Append(key.KeyChar);
+                }
+            }
+        }
+
         public void AddEvent()
         {
             throw new NotImplementedException();
@@ -44,11 +91,6 @@ namespace CalendarClient
             throw new NotImplementedException();
         }
 
-        public Task<string> GetInput()
-        {
-            throw new NotImplementedException();
-        }
-
         public void ListEvents()
         {
             throw new NotImplementedException();
@@ -69,7 +111,7 @@ namespace CalendarClient
             throw new NotImplementedException();
         }
 
-        public void ShowMessage()
+        public void ShowMessage(string message)
         {
             throw new NotImplementedException();
         }
