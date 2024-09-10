@@ -27,6 +27,7 @@ namespace CalendarClient
         {
             this.ui = ui;
             this.connection = connection;
+            CommandString = "";
         }
         public void Execute()
         {
@@ -46,7 +47,16 @@ namespace CalendarClient
 
     public class LoginUserCommand : ICalendarCommand
     {
+        private IUserInterface ui;
+        private IConnection connection;
         public string CommandString { get => throw new NotImplementedException(); set => throw new NotImplementedException(); }
+
+        public LoginUserCommand(IUserInterface ui, IConnection connection)
+        {
+            this.ui= ui;
+            this.connection = connection;
+            CommandString = "";
+        }
 
         public bool CheckArguments()
         {
@@ -63,8 +73,15 @@ namespace CalendarClient
 
     public class LogoutUserCommand : ICalendarCommand
     {
+        private IUserInterface ui;
+        private IConnection connection;
         public string CommandString { get => throw new NotImplementedException(); set => throw new NotImplementedException(); }
-
+        public LogoutUserCommand(IUserInterface ui, IConnection connection)
+        {
+            this.ui= ui;
+            this.connection = connection;
+            CommandString = "";
+        }
         public bool CheckArguments()
         {
             throw new NotImplementedException();
@@ -80,8 +97,15 @@ namespace CalendarClient
 
     public class ChangeUserNameCommand : ICalendarCommand
     {
+        private IUserInterface ui;
+        private IConnection connection;
         public string CommandString { get => throw new NotImplementedException(); set => throw new NotImplementedException(); }
-
+        public ChangeUserNameCommand(IUserInterface ui, IConnection connection)
+        {
+            this.ui= ui;
+            this.connection = connection;
+            CommandString = "";
+        }
         public bool CheckArguments()
         {
             throw new NotImplementedException();
@@ -97,8 +121,15 @@ namespace CalendarClient
 
     public class ChangeUserPasswordCommand : ICalendarCommand
     {
+        private IUserInterface ui;
+        private IConnection connection;
         public string CommandString { get => throw new NotImplementedException(); set => throw new NotImplementedException(); }
-
+        public ChangeUserPasswordCommand(IUserInterface ui, IConnection connection)
+        {
+            this.ui= ui;
+            this.connection= connection;
+            CommandString = "";
+        }
         public bool CheckArguments()
         {
             throw new NotImplementedException();
@@ -114,8 +145,15 @@ namespace CalendarClient
 
     public class AddEventCommand : ICalendarCommand
     {
+        private IUserInterface ui;
+        private IConnection connection;
         public string CommandString { get => throw new NotImplementedException(); set => throw new NotImplementedException(); }
-
+        public AddEventCommand(IUserInterface ui, IConnection connection)
+        {
+            this.ui= ui;
+            this.connection= connection;
+            CommandString = "";
+        }
         public bool CheckArguments()
         {
             throw new NotImplementedException();
@@ -131,8 +169,15 @@ namespace CalendarClient
 
     public class DeleteEventCommand : ICalendarCommand
     {
+        private IUserInterface ui;
+        private IConnection connection;
         public string CommandString { get => throw new NotImplementedException(); set => throw new NotImplementedException(); }
-
+        public DeleteEventCommand(IUserInterface ui, IConnection connection)
+        {
+            this.ui= ui;
+            this.connection= connection;
+            CommandString = "";
+        }
         public bool CheckArguments()
         {
             throw new NotImplementedException();
@@ -148,8 +193,15 @@ namespace CalendarClient
 
     public class EditEventCommand : ICalendarCommand
     {
+        private IUserInterface ui;
+        private IConnection connection;
         public string CommandString { get => throw new NotImplementedException(); set => throw new NotImplementedException(); }
-
+        public EditEventCommand(IUserInterface ui, IConnection connection)
+        {
+            this.ui= ui;
+            this.connection= connection;
+            CommandString = "";
+        }
         public bool CheckArguments()
         {
             throw new NotImplementedException();
@@ -165,8 +217,15 @@ namespace CalendarClient
 
     public class ListEventsCommand : ICalendarCommand
     {
+        private IUserInterface ui;
+        private IConnection connection;
         public string CommandString { get => throw new NotImplementedException(); set => throw new NotImplementedException(); }
-
+        public ListEventsCommand(IUserInterface ui, IConnection connection)
+        {
+            this.ui= ui;
+            this.connection= connection;
+            CommandString = "";
+        }
         public bool CheckArguments()
         {
             throw new NotImplementedException();
@@ -182,8 +241,15 @@ namespace CalendarClient
 
     public class ShowEventCommand : ICalendarCommand
     {
+        private IUserInterface ui;
+        private IConnection connection;
         public string CommandString { get => throw new NotImplementedException(); set => throw new NotImplementedException(); }
-
+        public ShowEventCommand(IUserInterface ui, IConnection connection)
+        {
+            this.ui= ui;
+            this.connection= connection;
+            CommandString = "";
+        }
         public bool CheckArguments()
         {
             throw new NotImplementedException();
@@ -199,8 +265,15 @@ namespace CalendarClient
 
     public class NextCommand : ICalendarCommand
     {
+        private IUserInterface ui;
+        private IConnection connection;
         public string CommandString { get => throw new NotImplementedException(); set => throw new NotImplementedException(); }
-
+        public NextCommand(IUserInterface ui, IConnection connection)
+        {
+            this.ui= ui;
+            this.connection= connection;
+            CommandString = "";
+        }
         public bool CheckArguments()
         {
             throw new NotImplementedException();
@@ -216,8 +289,15 @@ namespace CalendarClient
 
     public class PreviousCommand : ICalendarCommand
     {
+        private IUserInterface ui;
+        private IConnection connection;
         public string CommandString { get => throw new NotImplementedException(); set => throw new NotImplementedException(); }
-
+        public PreviousCommand(IUserInterface ui, IConnection connection)
+        {
+            this.ui= ui;
+            this.connection= connection;
+            CommandString = "";
+        }
         public bool CheckArguments()
         {
             throw new NotImplementedException();
@@ -233,8 +313,15 @@ namespace CalendarClient
 
     public class CurrentCommand : ICalendarCommand
     {
+        private IUserInterface ui;
+        private IConnection connection;
         public string CommandString { get => throw new NotImplementedException(); set => throw new NotImplementedException(); }
-
+        public CurrentCommand(IUserInterface ui, IConnection connection)
+        {
+            this.ui= ui;
+            this.connection= connection;
+            CommandString = "";
+        }
         public bool CheckArguments()
         {
             throw new NotImplementedException();
@@ -250,7 +337,15 @@ namespace CalendarClient
 
     public class ViewCommand : ICalendarCommand
     {
+        private IUserInterface ui;
+        private IConnection connection;
         public string CommandString { get => throw new NotImplementedException(); set => throw new NotImplementedException(); }
+        public ViewCommand(IUserInterface ui, IConnection connection)
+        {
+            this.ui = ui;
+            this.connection = connection;
+            CommandString = "";
+        }
 
         public bool CheckArguments()
         {
