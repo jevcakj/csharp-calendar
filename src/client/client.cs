@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
+using System.Windows.Input;
 using CalendarCommon;
 
 namespace CalendarClient
@@ -35,5 +36,13 @@ namespace CalendarClient
             commands.Add("view", new ViewCommand(ui, connection));
         }
 
+        public void Start()
+        {
+            while (true)
+            {
+                ICalendarCommand command = ui.GetInput();
+                command.Execute();
+            }
+        }
     }
 }
