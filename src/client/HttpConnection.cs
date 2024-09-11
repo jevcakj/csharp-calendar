@@ -3,6 +3,7 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Net.Http.Headers;
+using System.Net.Http.Json;
 using System.Text;
 using System.Threading.Tasks;
 
@@ -27,7 +28,19 @@ namespace CalendarClient
 
         public bool CreateUser(User user)
         {
-            throw new NotImplementedException();
+            UriBuilder uriBuilder = new();
+            uriBuilder.Path = "/User/Register/";
+            uriBuilder.Host = "localhost";
+            uriBuilder.Port = 8080;
+            var content = JsonContent.Create(user);
+            var responseTask = client.PostAsync(uriBuilder.Uri, content);
+            responseTask.Wait();
+            var response = responseTask.Result;
+            if (response.IsSuccessStatusCode)
+            {
+                return true;
+            }
+            return false;
         }
 
         public void DeleteEvent(DateTime date, int ID, User user)

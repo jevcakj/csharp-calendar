@@ -8,6 +8,7 @@ using CalendarCommon;
 
 namespace CalendarClient
 {
+    //TODO exit command
     public interface ICalendarCommand
     {
         public string CommandString { get; set; }
@@ -32,7 +33,9 @@ namespace CalendarClient
         public void Execute()
         {
             User user = ui.CreateUser();
-            //connection.CreateUser(user);
+            if (connection.CreateUser(user))
+                return;
+            Console.WriteLine("Unable to create user");
         }
         public bool CheckArguments() => true;
         public ICalendarCommand Copy()
@@ -44,12 +47,11 @@ namespace CalendarClient
         }
     }
 
-
     public class LoginUserCommand : ICalendarCommand
     {
         private IUserInterface ui;
         private IConnection connection;
-        public string CommandString { get => throw new NotImplementedException(); set => throw new NotImplementedException(); }
+        public string CommandString { get; set; }
 
         public LoginUserCommand(IUserInterface ui, IConnection connection)
         {
@@ -75,7 +77,7 @@ namespace CalendarClient
     {
         private IUserInterface ui;
         private IConnection connection;
-        public string CommandString { get => throw new NotImplementedException(); set => throw new NotImplementedException(); }
+        public string CommandString { get; set; }
         public LogoutUserCommand(IUserInterface ui, IConnection connection)
         {
             this.ui= ui;
@@ -99,7 +101,7 @@ namespace CalendarClient
     {
         private IUserInterface ui;
         private IConnection connection;
-        public string CommandString { get => throw new NotImplementedException(); set => throw new NotImplementedException(); }
+        public string CommandString { get; set; }
         public ChangeUserNameCommand(IUserInterface ui, IConnection connection)
         {
             this.ui= ui;
@@ -123,7 +125,7 @@ namespace CalendarClient
     {
         private IUserInterface ui;
         private IConnection connection;
-        public string CommandString { get => throw new NotImplementedException(); set => throw new NotImplementedException(); }
+        public string CommandString { get; set; }
         public ChangeUserPasswordCommand(IUserInterface ui, IConnection connection)
         {
             this.ui= ui;
@@ -147,7 +149,7 @@ namespace CalendarClient
     {
         private IUserInterface ui;
         private IConnection connection;
-        public string CommandString { get => throw new NotImplementedException(); set => throw new NotImplementedException(); }
+        public string CommandString { get; set; }
         public AddEventCommand(IUserInterface ui, IConnection connection)
         {
             this.ui= ui;
@@ -156,12 +158,13 @@ namespace CalendarClient
         }
         public bool CheckArguments()
         {
-            throw new NotImplementedException();
+            //throw new NotImplementedException();
+            return true;
         }
 
         public ICalendarCommand Copy()
         {
-            throw new NotImplementedException();
+            return new AddEventCommand(ui, connection);
         }
 
         public void Execute() { }
@@ -171,7 +174,7 @@ namespace CalendarClient
     {
         private IUserInterface ui;
         private IConnection connection;
-        public string CommandString { get => throw new NotImplementedException(); set => throw new NotImplementedException(); }
+        public string CommandString { get; set; }
         public DeleteEventCommand(IUserInterface ui, IConnection connection)
         {
             this.ui= ui;
@@ -195,7 +198,7 @@ namespace CalendarClient
     {
         private IUserInterface ui;
         private IConnection connection;
-        public string CommandString { get => throw new NotImplementedException(); set => throw new NotImplementedException(); }
+        public string CommandString { get; set; }
         public EditEventCommand(IUserInterface ui, IConnection connection)
         {
             this.ui= ui;
@@ -219,7 +222,7 @@ namespace CalendarClient
     {
         private IUserInterface ui;
         private IConnection connection;
-        public string CommandString { get => throw new NotImplementedException(); set => throw new NotImplementedException(); }
+        public string CommandString { get; set; }
         public ListEventsCommand(IUserInterface ui, IConnection connection)
         {
             this.ui= ui;
@@ -243,7 +246,7 @@ namespace CalendarClient
     {
         private IUserInterface ui;
         private IConnection connection;
-        public string CommandString { get => throw new NotImplementedException(); set => throw new NotImplementedException(); }
+        public string CommandString { get; set; }
         public ShowEventCommand(IUserInterface ui, IConnection connection)
         {
             this.ui= ui;
@@ -267,7 +270,7 @@ namespace CalendarClient
     {
         private IUserInterface ui;
         private IConnection connection;
-        public string CommandString { get => throw new NotImplementedException(); set => throw new NotImplementedException(); }
+        public string CommandString { get; set; }
         public NextCommand(IUserInterface ui, IConnection connection)
         {
             this.ui= ui;
@@ -291,7 +294,7 @@ namespace CalendarClient
     {
         private IUserInterface ui;
         private IConnection connection;
-        public string CommandString { get => throw new NotImplementedException(); set => throw new NotImplementedException(); }
+        public string CommandString { get; set; }
         public PreviousCommand(IUserInterface ui, IConnection connection)
         {
             this.ui= ui;
@@ -315,7 +318,7 @@ namespace CalendarClient
     {
         private IUserInterface ui;
         private IConnection connection;
-        public string CommandString { get => throw new NotImplementedException(); set => throw new NotImplementedException(); }
+        public string CommandString { get; set; }
         public CurrentCommand(IUserInterface ui, IConnection connection)
         {
             this.ui= ui;
@@ -339,7 +342,7 @@ namespace CalendarClient
     {
         private IUserInterface ui;
         private IConnection connection;
-        public string CommandString { get => throw new NotImplementedException(); set => throw new NotImplementedException(); }
+        public string CommandString { get; set; }
         public ViewCommand(IUserInterface ui, IConnection connection)
         {
             this.ui = ui;

@@ -42,8 +42,8 @@ namespace CalendarClient
                         {
                             commandHistory.Add(command);
                             sb.Clear();
-                            ClearLine();
                             commandHistoryIndexer = 0;
+                            Console.WriteLine();
                             return command;
                         }
                         else
@@ -119,7 +119,30 @@ namespace CalendarClient
 
         public User CreateUser()
         {
-            throw new NotImplementedException();
+            Console.WriteLine("Name:");
+            string name = Console.ReadLine();
+            while(true)
+            {
+                Console.WriteLine("Password:");
+                string password;
+                ReadPassword(out password);
+                Console.WriteLine();
+                Console.WriteLine("Check password:");
+                string checkPassword;
+                ReadPassword(out checkPassword);
+                Console.WriteLine();
+                if (password == checkPassword)
+                {
+                    return new User() { name = name, password = password };
+                }
+                var curr = Console.CursorTop;
+                for(int i = 1; i <= 4; i++)
+                {
+                    Console.SetCursorPosition(0, curr - i);
+                    ClearLine();
+                }
+                Console.WriteLine("Passwords are different. Try again.");
+            }
         }
 
         public void DeleteEvent()
@@ -166,6 +189,40 @@ namespace CalendarClient
                 Console.Write(' ');
             }
             Console.SetCursorPosition(0, a.Top);
+        }
+
+        private bool ReadPassword(out string password)
+        {
+            StringBuilder sb = new StringBuilder();
+            ConsoleKeyInfo key;
+
+            while(true)
+            {
+                key = Console.ReadKey(true);
+                if (key.Key == ConsoleKey.Enter)
+                {
+                    password = sb.ToString();
+                    return true;
+                }
+                else if (key.Key == ConsoleKey.Escape)
+                {
+                    password = "";
+                    return false;
+                }
+                else if (key.Key == ConsoleKey.Backspace)
+                {
+                    if (sb.Length > 0)
+                    {
+                        sb.Remove(sb.Length - 1, 1);
+                        Console.Write("\b \b");
+                    }
+                }
+                else if (Char.IsLetterOrDigit(key.KeyChar) || char.IsWhiteSpace(key.KeyChar))
+                {
+                    sb.Append(key.KeyChar);
+                    Console.Write('.');
+                }
+            }
         }
     }
 }
