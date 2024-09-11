@@ -35,9 +35,9 @@ namespace CalendarClient
             User user = ui.CreateUser();
             if (connection.CreateUser(user))
                 return;
-            Console.WriteLine("Unable to create user");
+            ui.ShowMessage("Unable to create user");
         }
-        public bool CheckArguments() => true;
+        public bool CheckArguments() => CommandString.Split(' ', StringSplitOptions.TrimEntries | StringSplitOptions.RemoveEmptyEntries ).Length == 1;
         public ICalendarCommand Copy()
         {
             return new CreateUserCommand(ui, connection)
@@ -45,6 +45,30 @@ namespace CalendarClient
                 CommandString = CommandString
             };
         }
+    }
+
+    public class ChangeUserNameCommand : ICalendarCommand
+    {
+        private IUserInterface ui;
+        private IConnection connection;
+        public string CommandString { get; set; }
+        public ChangeUserNameCommand(IUserInterface ui, IConnection connection)
+        {
+            this.ui = ui;
+            this.connection = connection;
+            CommandString = "";
+        }
+        public bool CheckArguments()
+        {
+            throw new NotImplementedException();
+        }
+
+        public ICalendarCommand Copy()
+        {
+            throw new NotImplementedException();
+        }
+
+        public void Execute() { }
     }
 
     public class LoginUserCommand : ICalendarCommand
@@ -60,17 +84,26 @@ namespace CalendarClient
             CommandString = "";
         }
 
-        public bool CheckArguments()
-        {
-            throw new NotImplementedException();
-        }
+        public bool CheckArguments() => CommandString.Split(' ', StringSplitOptions.TrimEntries | StringSplitOptions.RemoveEmptyEntries).Length == 1;
 
         public ICalendarCommand Copy()
         {
-            throw new NotImplementedException();
+            return new LoginUserCommand(ui, connection);
         }
 
-        public void Execute() { }
+        public void Execute()
+        {
+            User user = ui.LoginUser();
+            if (connection.SetClientUser(user))
+            {
+                ui.User = user;
+            }
+            else
+            {
+                connection.SetClientUser(user);
+                ui.ShowMessage("Invalid username or password.");
+            }
+        }
     }
 
     public class LogoutUserCommand : ICalendarCommand
@@ -84,41 +117,18 @@ namespace CalendarClient
             this.connection = connection;
             CommandString = "";
         }
-        public bool CheckArguments()
-        {
-            throw new NotImplementedException();
-        }
+        public bool CheckArguments() => CommandString.Split(' ', StringSplitOptions.TrimEntries | StringSplitOptions.RemoveEmptyEntries).Length == 1;
 
         public ICalendarCommand Copy()
         {
-            throw new NotImplementedException();
+            return new LogoutUserCommand(ui, connection);
         }
 
-        public void Execute() { }
-    }
-
-    public class ChangeUserNameCommand : ICalendarCommand
-    {
-        private IUserInterface ui;
-        private IConnection connection;
-        public string CommandString { get; set; }
-        public ChangeUserNameCommand(IUserInterface ui, IConnection connection)
+        public void Execute()
         {
-            this.ui= ui;
-            this.connection = connection;
-            CommandString = "";
+            ui.LogoutUser();
+            connection.SetClientDefaultUser();
         }
-        public bool CheckArguments()
-        {
-            throw new NotImplementedException();
-        }
-
-        public ICalendarCommand Copy()
-        {
-            throw new NotImplementedException();
-        }
-
-        public void Execute() { }
     }
 
     public class ChangeUserPasswordCommand : ICalendarCommand

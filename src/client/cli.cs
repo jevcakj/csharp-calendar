@@ -12,6 +12,7 @@ namespace CalendarClient
         private Dictionary<string, ICalendarCommand> commands;
         private List<ICalendarCommand> commandHistory;
         private int commandHistoryIndexer;
+        public User? User { get; set; }
         public CommandLineInterface(Dictionary<string, ICalendarCommand> commands)
         {
             this.commands = commands;
@@ -21,8 +22,9 @@ namespace CalendarClient
 
         public ICalendarCommand GetInput()
         {
-                StringBuilder sb = new StringBuilder();
-                ConsoleKeyInfo key;
+            StringBuilder sb = new StringBuilder();
+            ConsoleKeyInfo key;
+            WritePrompt();
 
             while (true)
             {
@@ -74,6 +76,7 @@ namespace CalendarClient
                         ICalendarCommand command = commandHistory[commandHistory.Count - commandHistoryIndexer];
                         sb = new StringBuilder(command.CommandString);
                         ClearLine();
+                        WritePrompt();
                         Console.Write(sb.ToString());
                     }
                     else
@@ -81,6 +84,7 @@ namespace CalendarClient
                         commandHistoryIndexer = 0;
                         sb = new StringBuilder();
                         ClearLine();
+                        WritePrompt();
                     }
                 }
                 else if (key.Key == ConsoleKey.UpArrow)
@@ -91,6 +95,7 @@ namespace CalendarClient
                         ICalendarCommand command = commandHistory[commandHistory.Count - commandHistoryIndexer];
                         sb = new StringBuilder(command.CommandString);
                         ClearLine();
+                        WritePrompt();
                         Console.Write(sb.ToString());
                     }
                 }
@@ -102,26 +107,11 @@ namespace CalendarClient
             }
         }
 
-        public void AddEvent()
-        {
-            throw new NotImplementedException();
-        }
-
-        public User ChangeUserName()
-        {
-            throw new NotImplementedException();
-        }
-
-        public User ChangeUserPassword()
-        {
-            throw new NotImplementedException();
-        }
-
         public User CreateUser()
         {
             Console.WriteLine("Name:");
             string name = Console.ReadLine();
-            while(true)
+            while (true)
             {
                 Console.WriteLine("Password:");
                 string password;
@@ -136,13 +126,45 @@ namespace CalendarClient
                     return new User() { name = name, password = password };
                 }
                 var curr = Console.CursorTop;
-                for(int i = 1; i <= 4; i++)
+                for (int i = 1; i <= 4; i++)
                 {
                     Console.SetCursorPosition(0, curr - i);
                     ClearLine();
                 }
                 Console.WriteLine("Passwords are different. Try again.");
             }
+        }
+
+        public User ChangeUserName()
+        {
+            throw new NotImplementedException();
+        }
+
+        public User ChangeUserPassword()
+        {
+            throw new NotImplementedException();
+        }
+
+        public User LoginUser()
+        {
+            Console.WriteLine("Name:");
+            string name = Console.ReadLine();
+            Console.WriteLine("Password:");
+            string password;
+            ReadPassword(out password);
+            Console.WriteLine();
+            return new User() { name = name, password = password };
+        }
+
+        public void LogoutUser()
+        {
+            User = null;
+            commandHistory.Clear();
+        }
+
+        public void AddEvent()
+        {
+            throw new NotImplementedException();
         }
 
         public void DeleteEvent()
@@ -156,16 +178,6 @@ namespace CalendarClient
         }
 
         public void ListEvents()
-        {
-            throw new NotImplementedException();
-        }
-
-        public User LoginUser()
-        {
-            throw new NotImplementedException();
-        }
-
-        public void LogoutUser()
         {
             throw new NotImplementedException();
         }
@@ -223,6 +235,11 @@ namespace CalendarClient
                     Console.Write('.');
                 }
             }
+        }
+
+        private void WritePrompt()
+        {
+            Console.Write(User is null ? "Calendar@ " : $"Calendar@{User.name} ");
         }
     }
 }
