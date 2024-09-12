@@ -14,9 +14,9 @@ namespace CalendarClient
         public void SetClientDefaultUser();
         public bool CreateUser(User user);
         public bool ChangeUser(User newUser);
+        public bool SaveEvent(CalendarEvent calendarEvent);
         public void GetEvent(DateTime date, int ID, User user);
         public void GetEvents(DateTime dateBegin, DateTime dateEnd, User user);
         public void DeleteEvent(DateTime date, int ID, User user);
-        public void SaveEvent(CalendarEvent calendarEvent, User user);
     }
 }

@@ -151,9 +151,40 @@ namespace CalendarClient
             commandHistory.Clear();
         }
 
-        public void AddEvent()
+        public CalendarEvent AddEvent()
         {
-            throw new NotImplementedException();
+            CalendarEvent calendarEvent = new CalendarEvent();
+            Console.WriteLine("Name:");
+            calendarEvent.name = Console.ReadLine();
+
+            StringBuilder stringBuilder = new StringBuilder();
+
+            Console.WriteLine("Date:");
+            var position = Console.GetCursorPosition();
+            Console.WriteLine("dd/mm/yyyy");
+            Console.SetCursorPosition(position.Left, position.Top);
+            stringBuilder.Append(Console.ReadLine());
+            stringBuilder.Append(' ');
+
+            Console.WriteLine("Time: ");
+            position = Console.GetCursorPosition();
+            Console.WriteLine("hh:mm");
+            Console.SetCursorPosition(position.Left, position.Top);
+            stringBuilder.Append(Console.ReadLine());
+
+            DateTime dateTime;
+            if(!DateTime.TryParse(stringBuilder.ToString(), out dateTime))
+            {
+                ShowMessage("Invalid time or date format");
+                return null;
+            }
+            calendarEvent.dateTime = dateTime;
+
+            Console.WriteLine("Description:");
+            string description = Console.ReadLine();
+            calendarEvent.description = description;
+
+            return calendarEvent;
         }
 
         public void DeleteEvent()

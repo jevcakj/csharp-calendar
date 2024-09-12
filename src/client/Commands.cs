@@ -8,7 +8,6 @@ using CalendarCommon;
 
 namespace CalendarClient
 {
-    //TODO exit command
     public interface ICalendarCommand
     {
         public string CommandString { get; set; }
@@ -180,17 +179,42 @@ namespace CalendarClient
             this.connection= connection;
             CommandString = "";
         }
-        public bool CheckArguments()
-        {
-            //throw new NotImplementedException();
-            return true;
-        }
+        public bool CheckArguments() => CommandString.Split(' ', StringSplitOptions.TrimEntries | StringSplitOptions.RemoveEmptyEntries).Length == 1;
 
         public ICalendarCommand Copy() => new AddEventCommand(ui, connection);
+
+        public void Execute()
+        {
+            CalendarEvent calendarEvent = ui.AddEvent();
+            if(calendarEvent is null)
+            {
+                return;
+            }
+            if (!connection.SaveEvent(calendarEvent))
+            {
+                ui.ShowMessage("Adding event was not successfull. Try it again.");
+            }
+        }
+    }
+
+    public class ExitCommand : ICalendarCommand
+    {
+        public string CommandString { get; set; }
+
+        public ExitCommand()
+        {
+            CommandString = "exit";
+        }
+
+        public bool CheckArguments() => true;
+
+        public ICalendarCommand Copy() => new ExitCommand();
 
         public void Execute() { }
     }
 
+    //TODO
+    #region
     public class DeleteEventCommand : ICalendarCommand
     {
         private IUserInterface ui;
@@ -384,19 +408,5 @@ namespace CalendarClient
         public void Execute() { }
     }
 
-    public class ExitCommand : ICalendarCommand
-    {
-        public string CommandString { get; set; }
-
-        public ExitCommand()
-        {
-            CommandString = "exit";
-        }
-
-        public bool CheckArguments() => true;
-
-        public ICalendarCommand Copy() => new ExitCommand();
-
-        public void Execute() { }
-    }
+    #endregion
 }

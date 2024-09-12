@@ -64,6 +64,26 @@ namespace CalendarClient
             return false;
         }
 
+        public bool SaveEvent(CalendarEvent calendarEvent)
+        {
+            UriBuilder uriBuilder = new();
+            uriBuilder.Path = "/Post";
+            uriBuilder.Host = "localhost";
+            uriBuilder.Port = 8080;
+            var content = JsonContent.Create(calendarEvent);
+            var responseTask = client.PostAsync(uriBuilder.Uri, content);
+            responseTask.Wait();
+            var response = responseTask.Result;
+            if (!response.IsSuccessStatusCode)
+            {
+                return false;
+            }
+            var idTask = response.Content.ReadAsStringAsync();
+            var id = idTask.Result;
+            calendarEvent.id = int.Parse(id);
+            return true;
+        }
+
         public void DeleteEvent(DateTime date, int ID, User user)
         {
             throw new NotImplementedException();
@@ -75,11 +95,6 @@ namespace CalendarClient
         }
 
         public void GetEvents(DateTime dateBegin, DateTime dateEnd, User user)
-        {
-            throw new NotImplementedException();
-        }
-
-        public void SaveEvent(CalendarEvent calendarEvent, User user)
         {
             throw new NotImplementedException();
         }
