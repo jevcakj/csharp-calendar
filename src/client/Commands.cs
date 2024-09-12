@@ -51,44 +51,90 @@ namespace CalendarClient
     {
         private IUserInterface ui;
         private IConnection connection;
+        private Client client;
         public string CommandString { get; set; }
-        public ChangeUserNameCommand(IUserInterface ui, IConnection connection)
+        public ChangeUserNameCommand(IUserInterface ui, IConnection connection, Client client)
         {
             this.ui = ui;
             this.connection = connection;
             CommandString = "";
+            this.client = client;
         }
-        public bool CheckArguments()
-        {
-            throw new NotImplementedException();
-        }
+        public bool CheckArguments() => CommandString.Split(' ', StringSplitOptions.TrimEntries | StringSplitOptions.RemoveEmptyEntries).Length == 1;
 
         public ICalendarCommand Copy()
         {
-            throw new NotImplementedException();
+            return new ChangeUserNameCommand(ui, connection, client);
         }
 
-        public void Execute() { }
+        public void Execute()
+        {
+            User user = ui.ChangeUserName();
+            user.password = client.user.password;
+            if (connection.ChangeUser(user))
+            {
+                client.user = user;
+                ui.UserName = user.name;
+            }
+            else
+            {
+                ui.ShowMessage("Username is already taken. Choose different.");
+            }
+        }
+    }
+
+    public class ChangeUserPasswordCommand : ICalendarCommand
+    {
+        private IUserInterface ui;
+        private IConnection connection;
+        private Client client;
+        public string CommandString { get; set; }
+        public ChangeUserPasswordCommand(IUserInterface ui, IConnection connection, Client client)
+        {
+            this.ui = ui;
+            this.connection = connection;
+            CommandString = "";
+            this.client = client;
+        }
+        public bool CheckArguments() => CommandString.Split(' ', StringSplitOptions.TrimEntries | StringSplitOptions.RemoveEmptyEntries).Length == 1;
+
+        public ICalendarCommand Copy() => new ChangeUserPasswordCommand(ui, connection, client);
+
+        public void Execute()
+        {
+            User user = ui.ChangeUserPassword();
+            user.name = client.user.name;
+            if (connection.ChangeUser(user))
+            {
+                client.user = user;
+            }
+            else
+            {
+                ui.ShowMessage("Unable to change password.");
+            }
+        }
     }
 
     public class LoginUserCommand : ICalendarCommand
     {
         private IUserInterface ui;
         private IConnection connection;
+        private Client client;
         public string CommandString { get; set; }
 
-        public LoginUserCommand(IUserInterface ui, IConnection connection)
+        public LoginUserCommand(IUserInterface ui, IConnection connection, Client client)
         {
-            this.ui= ui;
+            this.ui = ui;
             this.connection = connection;
             CommandString = "";
+            this.client = client;
         }
 
         public bool CheckArguments() => CommandString.Split(' ', StringSplitOptions.TrimEntries | StringSplitOptions.RemoveEmptyEntries).Length == 1;
 
         public ICalendarCommand Copy()
         {
-            return new LoginUserCommand(ui, connection);
+            return new LoginUserCommand(ui, connection, client);
         }
 
         public void Execute()
@@ -96,11 +142,12 @@ namespace CalendarClient
             User user = ui.LoginUser();
             if (connection.SetClientUser(user))
             {
-                ui.User = user;
+                client.user = user;
+                ui.UserName = user.name;
             }
             else
             {
-                connection.SetClientUser(user);
+                connection.SetClientDefaultUser();
                 ui.ShowMessage("Invalid username or password.");
             }
         }
@@ -129,30 +176,6 @@ namespace CalendarClient
             ui.LogoutUser();
             connection.SetClientDefaultUser();
         }
-    }
-
-    public class ChangeUserPasswordCommand : ICalendarCommand
-    {
-        private IUserInterface ui;
-        private IConnection connection;
-        public string CommandString { get; set; }
-        public ChangeUserPasswordCommand(IUserInterface ui, IConnection connection)
-        {
-            this.ui= ui;
-            this.connection= connection;
-            CommandString = "";
-        }
-        public bool CheckArguments()
-        {
-            throw new NotImplementedException();
-        }
-
-        public ICalendarCommand Copy()
-        {
-            throw new NotImplementedException();
-        }
-
-        public void Execute() { }
     }
 
     public class AddEventCommand : ICalendarCommand

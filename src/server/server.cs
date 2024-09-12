@@ -74,13 +74,6 @@ namespace CalendarServer
                 return;
             }
 
-            if(rq.HttpMethod == HttpMethod.Head.Method)
-            {
-                rsp.StatusCode = (int)HttpStatusCode.OK;
-                rsp.Close();
-                return;
-            }
-
             if(rq.HttpMethod == HttpMethod.Post.Method && rq.Url.AbsolutePath == "/User/Register/")
             {
                 RegisterUser(ctx);
@@ -95,7 +88,13 @@ namespace CalendarServer
             if (!data.AuthenticateUser(user))
             {
                 rsp.StatusCode = (int)HttpStatusCode.Unauthorized;
-                WriteContent(rsp, "Invalid credentials.");
+                rsp.Close();
+                return;
+            }
+
+            if (rq.HttpMethod == HttpMethod.Head.Method)
+            {
+                rsp.StatusCode = (int)HttpStatusCode.OK;
                 rsp.Close();
                 return;
             }
@@ -232,9 +231,6 @@ namespace CalendarServer
             var buffer = Encoding.UTF8.GetBytes(content);
             rsp.OutputStream.Write(buffer, 0, buffer.Length);
             rsp.OutputStream.Close();
-            rsp.ContentLength64 = buffer.Length;
-            rsp.ContentEncoding = Encoding.UTF8;
-            rsp.ContentType = "application/json";
         }
 
         private void WriteContent(HttpListenerResponse rsp, int content) => WriteContent(rsp, $"{content}");

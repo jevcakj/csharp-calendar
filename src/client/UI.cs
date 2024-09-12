@@ -9,7 +9,7 @@ namespace CalendarClient
 {
     public interface IUserInterface
     {
-        public User User { get; set; }
+        public string UserName { get; set; }
         public ICalendarCommand GetInput();
         public User LoginUser();
         public void LogoutUser();

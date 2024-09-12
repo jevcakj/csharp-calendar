@@ -12,6 +12,7 @@ namespace CalendarClient
     {
         private IUserInterface ui;
         private IConnection connection;
+        public User user { get;  set; }
         int viewSpan;
         ICalendarCommand lastCommand;
         public Client()
@@ -21,10 +22,10 @@ namespace CalendarClient
             connection = new HttpConnection(new User() { name = "defaultUser", password = "" });
 
             commands.Add("createUser", new CreateUserCommand(ui, connection));
-            commands.Add("login", new LoginUserCommand(ui, connection));
+            commands.Add("login", new LoginUserCommand(ui, connection, this));
             commands.Add("logout", new LogoutUserCommand(ui, connection));
-            commands.Add("changeName", new ChangeUserNameCommand(ui, connection));
-            commands.Add("changePassword", new ChangeUserPasswordCommand(ui, connection));
+            commands.Add("changeName", new ChangeUserNameCommand(ui, connection, this));
+            commands.Add("changePassword", new ChangeUserPasswordCommand(ui, connection, this));
             commands.Add("add", new AddEventCommand(ui, connection));
             commands.Add("delete", new DeleteEventCommand(ui, connection));
             commands.Add("edit", new EditEventCommand(ui, connection));

@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
+using System.Xml.Linq;
 using CalendarCommon;
 
 namespace CalendarClient
@@ -12,7 +13,7 @@ namespace CalendarClient
         private Dictionary<string, ICalendarCommand> commands;
         private List<ICalendarCommand> commandHistory;
         private int commandHistoryIndexer;
-        public User? User { get; set; }
+        public string? UserName { get; set; }
         public CommandLineInterface(Dictionary<string, ICalendarCommand> commands)
         {
             this.commands = commands;
@@ -50,13 +51,17 @@ namespace CalendarClient
                         }
                         else
                         {
+                            Console.WriteLine();
                             ShowMessage("Invalid arguments");
+                            WritePrompt();
                             Console.Write(commandWhole);
                         }
                     }
                     else
                     {
+                        Console.WriteLine();
                         ShowMessage("Invalid command");
+                        WritePrompt();
                         Console.Write(commandWhole);
                     }
                 }
@@ -111,38 +116,22 @@ namespace CalendarClient
         {
             Console.WriteLine("Name:");
             string name = Console.ReadLine();
-            while (true)
-            {
-                Console.WriteLine("Password:");
-                string password;
-                ReadPassword(out password);
-                Console.WriteLine();
-                Console.WriteLine("Check password:");
-                string checkPassword;
-                ReadPassword(out checkPassword);
-                Console.WriteLine();
-                if (password == checkPassword)
-                {
-                    return new User() { name = name, password = password };
-                }
-                var curr = Console.CursorTop;
-                for (int i = 1; i <= 4; i++)
-                {
-                    Console.SetCursorPosition(0, curr - i);
-                    ClearLine();
-                }
-                Console.WriteLine("Passwords are different. Try again.");
-            }
+
+            User user = GetValidPassword();
+            user.name = name;
+            return user;
         }
 
         public User ChangeUserName()
         {
-            throw new NotImplementedException();
+            Console.WriteLine("Name:");
+            string name = Console.ReadLine();
+            return new User() { name = name };
         }
 
         public User ChangeUserPassword()
         {
-            throw new NotImplementedException();
+            return GetValidPassword();
         }
 
         public User LoginUser()
@@ -158,7 +147,7 @@ namespace CalendarClient
 
         public void LogoutUser()
         {
-            User = null;
+            UserName = null;
             commandHistory.Clear();
         }
 
@@ -203,6 +192,32 @@ namespace CalendarClient
             Console.SetCursorPosition(0, a.Top);
         }
 
+        private User GetValidPassword()
+        {
+            while (true)
+            {
+                Console.WriteLine("Password:");
+                string password;
+                ReadPassword(out password);
+                Console.WriteLine();
+                Console.WriteLine("Check password:");
+                string checkPassword;
+                ReadPassword(out checkPassword);
+                Console.WriteLine();
+                if (password == checkPassword)
+                {
+                    return new User() { password = password };
+                }
+                var curr = Console.CursorTop;
+                for (int i = 1; i <= 4; i++)
+                {
+                    Console.SetCursorPosition(0, curr - i);
+                    ClearLine();
+                }
+                Console.WriteLine("Passwords are different. Try again.");
+            }
+        }
+
         private bool ReadPassword(out string password)
         {
             StringBuilder sb = new StringBuilder();
@@ -239,7 +254,7 @@ namespace CalendarClient
 
         private void WritePrompt()
         {
-            Console.Write(User is null ? "Calendar@ " : $"Calendar@{User.name} ");
+            Console.Write(UserName is null ? "Calendar@ " : $"Calendar@{UserName} ");
         }
     }
 }

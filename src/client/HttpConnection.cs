@@ -12,18 +12,16 @@ namespace CalendarClient
     public class HttpConnection : IConnection
     {
         private User defaultUser;
+        private User user;
         private HttpClient client;
         public HttpConnection(User defaultUser)
         {
             this.defaultUser = defaultUser;
+            this.user = defaultUser;
             client = new HttpClient();
             var authenticationString = $"{defaultUser.name}:{defaultUser.password}";
             var base64EncodedAuthenticationString = Convert.ToBase64String(ASCIIEncoding.ASCII.GetBytes(authenticationString));
             client.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Basic", base64EncodedAuthenticationString);
-        }
-        public void ChangeUser(User oldUser, User newUser)
-        {
-            throw new NotImplementedException();
         }
 
         public bool CreateUser(User user)
@@ -36,8 +34,31 @@ namespace CalendarClient
             var responseTask = client.PostAsync(uriBuilder.Uri, content);
             responseTask.Wait();
             var response = responseTask.Result;
+            //TODO nejak vratit duvod failu
+            //var str = response.Content.ReadAsStringAsync().Result;
             if (response.IsSuccessStatusCode)
             {
+                return true;
+            }
+            return false;
+        }
+
+        public bool ChangeUser(User newUser)
+        {
+            UriBuilder uriBuilder = new();
+            uriBuilder.Path = user.name == newUser.name ? "/User/Change/Password/" : "/User/Change/Name/";
+            uriBuilder.Host = "localhost";
+            uriBuilder.Port = 8080;
+            var content = JsonContent.Create(newUser);
+            var responseTask = client.PostAsync(uriBuilder.Uri, content);
+            responseTask.Wait();
+            var response = responseTask.Result;
+            if (response.IsSuccessStatusCode)
+            {
+                user = newUser;
+                var authenticationString = $"{user.name}:{user.password}";
+                var base64EncodedAuthenticationString = Convert.ToBase64String(ASCIIEncoding.ASCII.GetBytes(authenticationString));
+                client.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Basic", base64EncodedAuthenticationString);
                 return true;
             }
             return false;
@@ -65,6 +86,7 @@ namespace CalendarClient
 
         public void SetClientDefaultUser()
         {
+            user = defaultUser;
             var authenticationString = $"{defaultUser.name}:{defaultUser.password}";
             var base64EncodedAuthenticationString = Convert.ToBase64String(ASCIIEncoding.ASCII.GetBytes(authenticationString));
             client.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Basic", base64EncodedAuthenticationString);
@@ -73,6 +95,7 @@ namespace CalendarClient
         public bool SetClientUser(User user)
         {
             {
+                this.user = user;
                 var authenticationString = $"{user.name}:{user.password}";
                 var base64EncodedAuthenticationString = Convert.ToBase64String(ASCIIEncoding.ASCII.GetBytes(authenticationString));
                 client.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Basic", base64EncodedAuthenticationString);
@@ -93,6 +116,7 @@ namespace CalendarClient
                 return true;
             }
             {
+                this.user = defaultUser;
                 var authenticationString = $"{defaultUser.name}:{defaultUser.password}";
                 var base64EncodedAuthenticationString = Convert.ToBase64String(ASCIIEncoding.ASCII.GetBytes(authenticationString));
                 client.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Basic", base64EncodedAuthenticationString);
