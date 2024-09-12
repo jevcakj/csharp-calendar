@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Net.Http.Headers;
 using System.Text;
 using System.Threading.Tasks;
 using System.Windows.Input;
@@ -35,6 +36,7 @@ namespace CalendarClient
             commands.Add("previous", new PreviousCommand(ui, connection));
             commands.Add("current", new CurrentCommand(ui, connection));
             commands.Add("view", new ViewCommand(ui, connection));
+            commands.Add("exit", new ExitCommand());
         }
 
         public void Start()
@@ -42,6 +44,10 @@ namespace CalendarClient
             while (true)
             {
                 ICalendarCommand command = ui.GetInput();
+                if(command is ExitCommand)
+                {
+                    return;
+                }
                 command.Execute();
             }
         }

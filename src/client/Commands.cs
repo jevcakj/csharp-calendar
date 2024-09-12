@@ -62,10 +62,7 @@ namespace CalendarClient
         }
         public bool CheckArguments() => CommandString.Split(' ', StringSplitOptions.TrimEntries | StringSplitOptions.RemoveEmptyEntries).Length == 1;
 
-        public ICalendarCommand Copy()
-        {
-            return new ChangeUserNameCommand(ui, connection, client);
-        }
+        public ICalendarCommand Copy() => new ChangeUserNameCommand(ui, connection, client);
 
         public void Execute()
         {
@@ -132,10 +129,7 @@ namespace CalendarClient
 
         public bool CheckArguments() => CommandString.Split(' ', StringSplitOptions.TrimEntries | StringSplitOptions.RemoveEmptyEntries).Length == 1;
 
-        public ICalendarCommand Copy()
-        {
-            return new LoginUserCommand(ui, connection, client);
-        }
+        public ICalendarCommand Copy() => new LoginUserCommand(ui, connection, client);
 
         public void Execute()
         {
@@ -166,10 +160,7 @@ namespace CalendarClient
         }
         public bool CheckArguments() => CommandString.Split(' ', StringSplitOptions.TrimEntries | StringSplitOptions.RemoveEmptyEntries).Length == 1;
 
-        public ICalendarCommand Copy()
-        {
-            return new LogoutUserCommand(ui, connection);
-        }
+        public ICalendarCommand Copy() => new LogoutUserCommand(ui, connection);
 
         public void Execute()
         {
@@ -195,10 +186,7 @@ namespace CalendarClient
             return true;
         }
 
-        public ICalendarCommand Copy()
-        {
-            return new AddEventCommand(ui, connection);
-        }
+        public ICalendarCommand Copy() => new AddEventCommand(ui, connection);
 
         public void Execute() { }
     }
@@ -392,6 +380,22 @@ namespace CalendarClient
         {
             throw new NotImplementedException();
         }
+
+        public void Execute() { }
+    }
+
+    public class ExitCommand : ICalendarCommand
+    {
+        public string CommandString { get; set; }
+
+        public ExitCommand()
+        {
+            CommandString = "exit";
+        }
+
+        public bool CheckArguments() => true;
+
+        public ICalendarCommand Copy() => new ExitCommand();
 
         public void Execute() { }
     }
