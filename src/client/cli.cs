@@ -104,7 +104,7 @@ namespace CalendarClient
                         Console.Write(sb.ToString());
                     }
                 }
-                else if(Char.IsLetterOrDigit(key.KeyChar) || char.IsWhiteSpace(key.KeyChar))
+                else if(!Char.IsControl(key.KeyChar))
                 {
                     sb.Append(key.KeyChar);
                     Console.Write(key.KeyChar);
@@ -197,9 +197,17 @@ namespace CalendarClient
             throw new NotImplementedException();
         }
 
-        public void ListEvents()
+        public void ListEvents( List<CalendarEvent> events)
         {
-            throw new NotImplementedException();
+            if(events is null ||  events.Count == 0)
+            {
+                ShowMessage("No events found.");
+                return;
+            }
+            foreach( CalendarEvent calendarEvent in events)
+            {
+                Console.WriteLine($"{calendarEvent.name}, {((DateTime)calendarEvent.dateTime).ToShortDateString()}, {((DateTime)calendarEvent.dateTime).ToShortTimeString()}");
+            }
         }
 
         public void ShowEvent()

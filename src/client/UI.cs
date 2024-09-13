@@ -20,7 +20,7 @@ namespace CalendarClient
         public void DeleteEvent();
         public void EditEvent();
         public void ShowEvent();
-        public void ListEvents();
+        public void ListEvents( List<CalendarEvent> events);
         public void ShowMessage(string message);
     }
 }

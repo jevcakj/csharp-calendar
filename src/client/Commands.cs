@@ -267,24 +267,70 @@ namespace CalendarClient
     {
         private IUserInterface ui;
         private IConnection connection;
+        private Client client;
         public string CommandString { get; set; }
-        public ListEventsCommand(IUserInterface ui, IConnection connection)
+        private List<CalendarEvent> events;
+        public ListEventsCommand(IUserInterface ui, IConnection connection, Client client)
         {
-            this.ui= ui;
-            this.connection= connection;
+            this.ui = ui;
+            this.connection = connection;
+            this.client = client;
             CommandString = "";
+            events = new List<CalendarEvent>();
         }
         public bool CheckArguments()
         {
-            throw new NotImplementedException();
+            string[] args = CommandString.Split(' ', StringSplitOptions.TrimEntries | StringSplitOptions.RemoveEmptyEntries);
+            if(args.Length != 1 && args.Length != 2)
+            {
+                return false;
+            }
+            DateTime date;
+            if(args.Length == 2 && !DateTime.TryParse(args[1], out date))
+            {
+                return false;
+            }
+            return true;
         }
 
-        public ICalendarCommand Copy()
+        public ICalendarCommand Copy() => new ListEventsCommand(ui, connection, client);
+
+        public void Execute()
         {
-            throw new NotImplementedException();
+            string[] args = CommandString.Split(' ', StringSplitOptions.TrimEntries | StringSplitOptions.RemoveEmptyEntries);
+            if (args.Length == 2)
+            {
+                DateTime shownDate = DateTime.Parse(args[1]);
+                client.shownDate = shownDate;
+            }
+            DateTime date = client.BeginningDate();
+            int numberOfDays = client.NumberOfDays();
+            if(numberOfDays > 0)
+            {
+                for (int i = 0; i < numberOfDays; i++)
+                {
+                    List<CalendarEvent> events = connection.GetEvents(date.AddDays(i));
+                    if(events is not null)
+                    {
+                        this.events.AddRange(events);
+                    }
+                }
+            }
+            else
+            {
+                for(;events.Count <= 10; date = date.AddDays(1))
+                {
+                    List<CalendarEvent> events = connection.GetEvents(date);
+                    this.events.AddRange(events);
+                }
+                if(events.Count > 10)
+                {
+                    events.RemoveRange(10, events.Count - 10);
+                }
+            }
+            ui.ListEvents(events);
         }
-
-        public void Execute() { }
+        public List<CalendarEvent> GetEvents() => events;
     }
 
     public class ShowEventCommand : ICalendarCommand
@@ -387,25 +433,49 @@ namespace CalendarClient
     {
         private IUserInterface ui;
         private IConnection connection;
+        private Client client;
         public string CommandString { get; set; }
-        public ViewCommand(IUserInterface ui, IConnection connection)
+        public ViewCommand(IUserInterface ui, IConnection connection, Client client)
         {
             this.ui = ui;
             this.connection = connection;
+            this.client = client;
             CommandString = "";
         }
 
         public bool CheckArguments()
         {
-            throw new NotImplementedException();
+            string[] args = CommandString.Split(' ', StringSplitOptions.TrimEntries | StringSplitOptions.RemoveEmptyEntries);
+            if(args.Length != 2)
+            {
+                return false;
+            }
+            if (args[1] != "week" && args[1] != "month" && args[1] != "upcomming")
+            {
+                return false;
+            }
+            return true;
         }
 
-        public ICalendarCommand Copy()
+        public ICalendarCommand Copy() => new ViewCommand(ui, connection, client);
+
+        public void Execute()
         {
-            throw new NotImplementedException();
+            string[] args = CommandString.Split(' ', StringSplitOptions.TrimEntries | StringSplitOptions.RemoveEmptyEntries);
+            switch (args[1])
+            {
+                case "month":
+                    client.SetView(ViewSpan.Month);
+                    break;
+                case "upcomming":
+                    client.SetView(ViewSpan.Upcomming);
+                    break;
+                case "week":
+                default:
+                    client.SetView(ViewSpan.Week);
+                    break;
+            }
         }
-
-        public void Execute() { }
     }
 
     #endregion

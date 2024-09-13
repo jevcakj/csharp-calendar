@@ -5,6 +5,7 @@ using System.Linq;
 using System.Net.Http.Headers;
 using System.Net.Http.Json;
 using System.Text;
+using System.Text.Json;
 using System.Threading.Tasks;
 
 namespace CalendarClient
@@ -89,14 +90,27 @@ namespace CalendarClient
             throw new NotImplementedException();
         }
 
-        public void GetEvent(DateTime date, int ID, User user)
+        public CalendarEvent GetEvent(DateTime date, int ID)
         {
             throw new NotImplementedException();
         }
 
-        public void GetEvents(DateTime dateBegin, DateTime dateEnd, User user)
+        public List<CalendarEvent> GetEvents(DateTime date)
         {
-            throw new NotImplementedException();
+            UriBuilder uriBuilder = new();
+            uriBuilder.Path = $"/{date.Year}/{date.Month}/{date.Day}/";
+            uriBuilder.Host = "localhost";
+            uriBuilder.Port = 8080;
+            var responseTask = client.GetAsync(uriBuilder.Uri);
+            responseTask.Wait();
+            var response = responseTask.Result;
+            if (!response.IsSuccessStatusCode)
+            {
+                return null;
+            }
+            var content = response.Content.ReadAsStringAsync().Result;
+            var events = JsonSerializer.Deserialize<List<CalendarEvent>>(content);
+            return events;
         }
 
         public void SetClientDefaultUser()
