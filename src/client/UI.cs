@@ -17,7 +17,7 @@ namespace CalendarClient
         public User ChangeUserName();
         public User ChangeUserPassword();
         public CalendarEvent AddEvent();
-        public void DeleteEvent();
+        public bool DeleteEvent(CalendarEvent calendarEvent);
         public void EditEvent();
         public void ShowEvent();
         public void ListEvents( List<CalendarEvent> events);

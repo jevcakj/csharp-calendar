@@ -17,6 +17,6 @@ namespace CalendarClient
         public bool SaveEvent(CalendarEvent calendarEvent);
         public CalendarEvent GetEvent(DateTime date, int ID);
         public List<CalendarEvent> GetEvents(DateTime dateBegin);
-        public void DeleteEvent(DateTime date, int ID, User user);
+        public bool DeleteEvent(DateTime date, int ID);
     }
 }

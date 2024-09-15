@@ -187,9 +187,15 @@ namespace CalendarClient
             return calendarEvent;
         }
 
-        public void DeleteEvent()
+        public bool DeleteEvent(CalendarEvent calendarEvent)
         {
-            throw new NotImplementedException();
+            Console.WriteLine($"{((DateTime)calendarEvent.dateTime).ToShortDateString()}, {((DateTime)calendarEvent.dateTime).ToShortTimeString()}, {calendarEvent.name}");
+            Console.Write("Do you want to delete this event?[N/y]:  ");
+            if(Console.ReadLine() == "y")
+            {
+                return true;
+            }
+            return false;
         }
 
         public void EditEvent()
@@ -204,9 +210,10 @@ namespace CalendarClient
                 ShowMessage("No events found.");
                 return;
             }
+            int index = 0;
             foreach( CalendarEvent calendarEvent in events)
             {
-                Console.WriteLine($"{calendarEvent.name}, {((DateTime)calendarEvent.dateTime).ToShortDateString()}, {((DateTime)calendarEvent.dateTime).ToShortTimeString()}");
+                Console.WriteLine($"{index++}     {((DateTime)calendarEvent.dateTime).ToShortDateString()}, {((DateTime)calendarEvent.dateTime).ToShortTimeString()}, {calendarEvent.name}");
             }
         }
 

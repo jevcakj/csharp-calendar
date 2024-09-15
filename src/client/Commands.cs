@@ -198,72 +198,6 @@ namespace CalendarClient
         }
     }
 
-    public class ExitCommand : ICalendarCommand
-    {
-        public string CommandString { get; set; }
-
-        public ExitCommand()
-        {
-            CommandString = "exit";
-        }
-
-        public bool CheckArguments() => true;
-
-        public ICalendarCommand Copy() => new ExitCommand();
-
-        public void Execute() { }
-    }
-
-    //TODO
-    #region
-    public class DeleteEventCommand : ICalendarCommand
-    {
-        private IUserInterface ui;
-        private IConnection connection;
-        public string CommandString { get; set; }
-        public DeleteEventCommand(IUserInterface ui, IConnection connection)
-        {
-            this.ui= ui;
-            this.connection= connection;
-            CommandString = "";
-        }
-        public bool CheckArguments()
-        {
-            throw new NotImplementedException();
-        }
-
-        public ICalendarCommand Copy()
-        {
-            throw new NotImplementedException();
-        }
-
-        public void Execute() { }
-    }
-
-    public class EditEventCommand : ICalendarCommand
-    {
-        private IUserInterface ui;
-        private IConnection connection;
-        public string CommandString { get; set; }
-        public EditEventCommand(IUserInterface ui, IConnection connection)
-        {
-            this.ui= ui;
-            this.connection= connection;
-            CommandString = "";
-        }
-        public bool CheckArguments()
-        {
-            throw new NotImplementedException();
-        }
-
-        public ICalendarCommand Copy()
-        {
-            throw new NotImplementedException();
-        }
-
-        public void Execute() { }
-    }
-
     public class ListEventsCommand : ICalendarCommand
     {
         protected IUserInterface ui;
@@ -282,12 +216,12 @@ namespace CalendarClient
         public bool CheckArguments()
         {
             string[] args = CommandString.Split(' ', StringSplitOptions.TrimEntries | StringSplitOptions.RemoveEmptyEntries);
-            if(args.Length != 1 && args.Length != 2)
+            if (args.Length != 1 && args.Length != 2)
             {
                 return false;
             }
             DateTime date;
-            if(args.Length == 2 && !DateTime.TryParse(args[1], out date))
+            if (args.Length == 2 && !DateTime.TryParse(args[1], out date))
             {
                 return false;
             }
@@ -306,12 +240,12 @@ namespace CalendarClient
             }
             DateTime date = client.BeginningDate();
             int numberOfDays = client.NumberOfDays();
-            if(numberOfDays > 0)
+            if (numberOfDays > 0)
             {
                 for (int i = 0; i < numberOfDays; i++)
                 {
                     List<CalendarEvent> events = connection.GetEvents(date.AddDays(i));
-                    if(events is not null)
+                    if (events is not null)
                     {
                         this.events.AddRange(events);
                     }
@@ -319,12 +253,12 @@ namespace CalendarClient
             }
             else
             {
-                for(;events.Count <= 10; date = date.AddDays(1))
+                for (; events.Count <= 10; date = date.AddDays(1))
                 {
                     List<CalendarEvent> events = connection.GetEvents(date);
                     this.events.AddRange(events);
                 }
-                if(events.Count > 10)
+                if (events.Count > 10)
                 {
                     events.RemoveRange(10, events.Count - 10);
                 }
@@ -332,30 +266,6 @@ namespace CalendarClient
             ui.ListEvents(events);
         }
         public List<CalendarEvent> GetEvents() => events;
-    }
-
-    public class ShowEventCommand : ICalendarCommand
-    {
-        private IUserInterface ui;
-        private IConnection connection;
-        public string CommandString { get; set; }
-        public ShowEventCommand(IUserInterface ui, IConnection connection)
-        {
-            this.ui= ui;
-            this.connection= connection;
-            CommandString = "";
-        }
-        public bool CheckArguments()
-        {
-            throw new NotImplementedException();
-        }
-
-        public ICalendarCommand Copy()
-        {
-            throw new NotImplementedException();
-        }
-
-        public void Execute() { }
     }
 
     public class NextCommand : ListEventsCommand, ICalendarCommand
@@ -418,7 +328,7 @@ namespace CalendarClient
         public bool CheckArguments()
         {
             string[] args = CommandString.Split(' ', StringSplitOptions.TrimEntries | StringSplitOptions.RemoveEmptyEntries);
-            if(args.Length != 2)
+            if (args.Length != 2)
             {
                 return false;
             }
@@ -448,6 +358,114 @@ namespace CalendarClient
                     break;
             }
         }
+    }
+
+    public class ExitCommand : ICalendarCommand
+    {
+        public string CommandString { get; set; }
+
+        public ExitCommand()
+        {
+            CommandString = "exit";
+        }
+
+        public bool CheckArguments() => true;
+
+        public ICalendarCommand Copy() => new ExitCommand();
+
+        public void Execute() { }
+    }
+
+    //TODO
+    #region
+    public class DeleteEventCommand : ICalendarCommand
+    {
+        private IUserInterface ui;
+        private IConnection connection;
+        private Client client;
+        public string CommandString { get; set; }
+        public DeleteEventCommand(IUserInterface ui, IConnection connection, Client client)
+        {
+            this.ui = ui;
+            this.connection = connection;
+            this.client = client;
+            CommandString = "";
+        }
+        public bool CheckArguments()
+        {
+            var args = CommandString.Split(' ', StringSplitOptions.TrimEntries | StringSplitOptions.RemoveEmptyEntries);
+            if(args.Length != 2)
+            {
+                return false;
+            }
+            int number;
+            if(!int.TryParse(args[1], out number))
+            {
+                return false;
+            }
+            return number >= 0 && number < client.ListLength();
+        }
+
+        public ICalendarCommand Copy() => new DeleteEventCommand(ui, connection, client);
+
+        public void Execute()
+        {
+            int index = int.Parse(CommandString.Split(' ', StringSplitOptions.TrimEntries | StringSplitOptions.RemoveEmptyEntries)[1]);
+            CalendarEvent calendarEvent = client.GetListedEvent(index);
+            if (!ui.DeleteEvent(calendarEvent))
+            {
+                return;
+            }
+            connection.DeleteEvent((DateTime)calendarEvent.dateTime, (int)calendarEvent.id);
+        }
+    }
+
+    public class EditEventCommand : ICalendarCommand
+    {
+        private IUserInterface ui;
+        private IConnection connection;
+        public string CommandString { get; set; }
+        public EditEventCommand(IUserInterface ui, IConnection connection)
+        {
+            this.ui= ui;
+            this.connection= connection;
+            CommandString = "";
+        }
+        public bool CheckArguments()
+        {
+            throw new NotImplementedException();
+        }
+
+        public ICalendarCommand Copy()
+        {
+            throw new NotImplementedException();
+        }
+
+        public void Execute() { }
+    }
+
+    public class ShowEventCommand : ICalendarCommand
+    {
+        private IUserInterface ui;
+        private IConnection connection;
+        public string CommandString { get; set; }
+        public ShowEventCommand(IUserInterface ui, IConnection connection)
+        {
+            this.ui= ui;
+            this.connection= connection;
+            CommandString = "";
+        }
+        public bool CheckArguments()
+        {
+            throw new NotImplementedException();
+        }
+
+        public ICalendarCommand Copy()
+        {
+            throw new NotImplementedException();
+        }
+
+        public void Execute() { }
     }
 
     #endregion

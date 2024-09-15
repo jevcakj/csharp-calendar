@@ -177,7 +177,7 @@ namespace CalendarServer
 
             var path = rq.Url.AbsolutePath.Split('/', StringSplitOptions.RemoveEmptyEntries);
             DateTime dateTime = new(int.Parse(path[0]), int.Parse(path[1]), int.Parse(path[2]));
-            int id = int.Parse(path[4]);
+            int id = int.Parse(path[3]);
             data.DeleteEvent(dateTime, id, user);
         }
 

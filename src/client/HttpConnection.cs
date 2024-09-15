@@ -85,9 +85,18 @@ namespace CalendarClient
             return true;
         }
 
-        public void DeleteEvent(DateTime date, int ID, User user)
+        public bool DeleteEvent(DateTime date, int id)
         {
-            throw new NotImplementedException();
+            UriBuilder uriBuilder = new();
+            uriBuilder.Path = $"/{date.Year}/{date.Month}/{date.Day}/{id}";
+            uriBuilder.Host = "localhost";
+            uriBuilder.Port = 8080;
+            var response = client.DeleteAsync(uriBuilder.Uri).Result;
+            if (!response.IsSuccessStatusCode)
+            {
+                return false;
+            }
+            return true;
         }
 
         public CalendarEvent GetEvent(DateTime date, int ID)
