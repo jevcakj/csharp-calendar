@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Reflection.Metadata.Ecma335;
 using System.Text;
 using System.Threading.Tasks;
 
@@ -265,9 +266,9 @@ namespace CalendarClient
 
     public class ListEventsCommand : ICalendarCommand
     {
-        private IUserInterface ui;
-        private IConnection connection;
-        private Client client;
+        protected IUserInterface ui;
+        protected IConnection connection;
+        protected Client client;
         public string CommandString { get; set; }
         private List<CalendarEvent> events;
         public ListEventsCommand(IUserInterface ui, IConnection connection, Client client)
@@ -357,76 +358,47 @@ namespace CalendarClient
         public void Execute() { }
     }
 
-    public class NextCommand : ICalendarCommand
+    public class NextCommand : ListEventsCommand, ICalendarCommand
     {
-        private IUserInterface ui;
-        private IConnection connection;
-        public string CommandString { get; set; }
-        public NextCommand(IUserInterface ui, IConnection connection)
-        {
-            this.ui= ui;
-            this.connection= connection;
-            CommandString = "";
-        }
-        public bool CheckArguments()
-        {
-            throw new NotImplementedException();
-        }
+        public NextCommand(IUserInterface ui, IConnection connection, Client client) : base(ui, connection, client) { }
+        public new bool CheckArguments() => CommandString.Split(' ', StringSplitOptions.TrimEntries | StringSplitOptions.RemoveEmptyEntries).Length == 1;
 
-        public ICalendarCommand Copy()
-        {
-            throw new NotImplementedException();
-        }
+        public new ICalendarCommand Copy() => new NextCommand(ui, connection, client);
 
-        public void Execute() { }
+        public new void Execute()
+        {
+            client.shownDate = client.shownDate.AddDays(7);
+            base.Execute();
+        }
     }
 
-    public class PreviousCommand : ICalendarCommand
+    public class PreviousCommand : ListEventsCommand, ICalendarCommand
     {
-        private IUserInterface ui;
-        private IConnection connection;
-        public string CommandString { get; set; }
-        public PreviousCommand(IUserInterface ui, IConnection connection)
-        {
-            this.ui= ui;
-            this.connection= connection;
-            CommandString = "";
-        }
-        public bool CheckArguments()
-        {
-            throw new NotImplementedException();
-        }
 
-        public ICalendarCommand Copy()
-        {
-            throw new NotImplementedException();
-        }
+        public PreviousCommand(IUserInterface ui, IConnection connection, Client client) : base(ui, connection, client) { }
+        public new bool CheckArguments() => CommandString.Split(' ', StringSplitOptions.TrimEntries | StringSplitOptions.RemoveEmptyEntries).Length == 1;
 
-        public void Execute() { }
+        public new ICalendarCommand Copy() => new PreviousCommand(ui, connection, client);
+
+        public new void Execute()
+        {
+            client.shownDate = client.shownDate.AddDays(-7);
+            base.Execute();
+        }
     }
 
-    public class CurrentCommand : ICalendarCommand
+    public class CurrentCommand : ListEventsCommand, ICalendarCommand
     {
-        private IUserInterface ui;
-        private IConnection connection;
-        public string CommandString { get; set; }
-        public CurrentCommand(IUserInterface ui, IConnection connection)
-        {
-            this.ui= ui;
-            this.connection= connection;
-            CommandString = "";
-        }
-        public bool CheckArguments()
-        {
-            throw new NotImplementedException();
-        }
+        public CurrentCommand(IUserInterface ui, IConnection connection, Client client) : base(ui, connection, client) { }
+        public new bool CheckArguments() => CommandString.Split(' ', StringSplitOptions.TrimEntries | StringSplitOptions.RemoveEmptyEntries).Length == 1;
 
-        public ICalendarCommand Copy()
-        {
-            throw new NotImplementedException();
-        }
+        public new ICalendarCommand Copy() => new CurrentCommand(ui, connection, client);
 
-        public void Execute() { }
+        public new void Execute()
+        {
+            client.shownDate = DateTime.Now;
+            base.Execute();
+        }
     }
 
     public class ViewCommand : ICalendarCommand

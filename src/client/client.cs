@@ -42,9 +42,9 @@ namespace CalendarClient
             commands.Add("edit", new EditEventCommand(ui, connection));
             commands.Add("list", new ListEventsCommand(ui, connection, this));
             commands.Add("show", new ShowEventCommand(ui,connection));
-            commands.Add("next", new NextCommand(ui, connection));
-            commands.Add("previous", new PreviousCommand(ui, connection));
-            commands.Add("current", new CurrentCommand(ui, connection));
+            commands.Add("next", new NextCommand(ui, connection, this));
+            commands.Add("previous", new PreviousCommand(ui, connection, this));
+            commands.Add("current", new CurrentCommand(ui, connection, this));
             commands.Add("view", new ViewCommand(ui, connection, this));
             commands.Add("exit", new ExitCommand());
         }
