@@ -163,16 +163,13 @@ namespace CalendarClient
             calendarEvent.beginning = beginning;
 
             Console.WriteLine("end:");
-            DateTime end = ReadDateTime(beginning.AddHours(1));
-            calendarEvent.end = end;
+            calendarEvent.end = ReadDateTime(beginning.AddHours(1));
 
             Console.WriteLine("Place:");
-            string place = Console.ReadLine();
-            calendarEvent.place = place;
-
+            calendarEvent.place = Console.ReadLine();
+            
             Console.WriteLine("Description:");
-            string description = Console.ReadLine();
-            calendarEvent.eventDescription = description;
+            calendarEvent.place = Console.ReadLine();
 
             return calendarEvent;
         }
@@ -188,9 +185,27 @@ namespace CalendarClient
             return false;
         }
 
-        public void EditEvent()
+        public CalendarEvent EditEvent(CalendarEvent calendarEvent)
         {
-            throw new NotImplementedException();
+            Console.WriteLine("Name:");
+            string name = ReadStringWithExample(calendarEvent.name);
+            if (!string.IsNullOrEmpty(name))    { calendarEvent.name = name; }
+
+            Console.WriteLine("Beginning:");
+            calendarEvent.beginning = ReadDateTime((DateTime)calendarEvent.beginning);
+
+            Console.WriteLine("end:");
+            calendarEvent.end = ReadDateTime((DateTime)calendarEvent.end);
+
+            Console.WriteLine("Place:");
+            string place = ReadStringWithExample(calendarEvent.place);
+            if (!string.IsNullOrEmpty(place))   { calendarEvent.place = place; }
+
+            Console.WriteLine("Description:");
+            string description = ReadStringWithExample(calendarEvent.eventDescription);
+            if(!string.IsNullOrEmpty(description)) { calendarEvent.eventDescription = description; }
+
+            return calendarEvent;
         }
 
         public void ListEvents( List<CalendarEventBasic> events)

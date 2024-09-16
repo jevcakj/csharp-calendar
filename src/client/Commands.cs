@@ -376,8 +376,6 @@ namespace CalendarClient
         public void Execute() { }
     }
 
-    //TODO
-    #region
     public class DeleteEventCommand : ICalendarCommand
     {
         private IUserInterface ui;
@@ -424,24 +422,48 @@ namespace CalendarClient
     {
         private IUserInterface ui;
         private IConnection connection;
+        private Client client;
         public string CommandString { get; set; }
-        public EditEventCommand(IUserInterface ui, IConnection connection)
+        public EditEventCommand(IUserInterface ui, IConnection connection, Client client)
         {
-            this.ui= ui;
-            this.connection= connection;
+            this.ui = ui;
+            this.connection = connection;
+            this.client = client;
             CommandString = "";
         }
         public bool CheckArguments()
         {
-            throw new NotImplementedException();
+            var args = CommandString.Split(' ', StringSplitOptions.TrimEntries | StringSplitOptions.RemoveEmptyEntries);
+            if (args.Length != 2)
+            {
+                return false;
+            }
+            int number;
+            if (!int.TryParse(args[1], out number))
+            {
+                return false;
+            }
+            return number >= 0 && number < client.ListLength();
         }
 
-        public ICalendarCommand Copy()
+        public ICalendarCommand Copy() => new EditEventCommand(ui,connection, client);
+
+        public void Execute()
         {
-            throw new NotImplementedException();
+            int index = int.Parse(CommandString.Split(' ', StringSplitOptions.TrimEntries | StringSplitOptions.RemoveEmptyEntries)[1]);
+            CalendarEventBasic preview = client.GetListedEvent(index);
+            CalendarEvent calendarEvent = connection.GetEvent((DateTime)preview.beginning, (int)preview.id);
+            if (calendarEvent is null)
+            {
+                ui.ShowMessage("Unable to get full event info. Try it again.");
+                return;
+            }
+            calendarEvent = ui.EditEvent(calendarEvent);
+            if (!connection.SaveEvent(calendarEvent))
+            {
+                ui.ShowMessage("Saving event was not successfull. Try it again.");
+            }
         }
-
-        public void Execute() { }
     }
 
     public class ShowEventCommand : ICalendarCommand
@@ -487,6 +509,4 @@ namespace CalendarClient
             ui.ShowEvent(calendarEvent);
         }
     }
-
-    #endregion
 }

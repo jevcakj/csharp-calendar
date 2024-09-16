@@ -44,7 +44,7 @@ namespace CalendarClient
             commands.Add("changePassword", new ChangeUserPasswordCommand(ui, connection, this));
             commands.Add("add", new AddEventCommand(ui, connection));
             commands.Add("delete", new DeleteEventCommand(ui, connection, this));
-            commands.Add("edit", new EditEventCommand(ui, connection));
+            commands.Add("edit", new EditEventCommand(ui, connection, this));
             commands.Add("list", new ListEventsCommand(ui, connection, this));
             commands.Add("show", new ShowEventCommand(ui,connection, this));
             commands.Add("next", new NextCommand(ui, connection, this));
