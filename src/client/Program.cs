@@ -1,5 +1,10 @@
-﻿using System.Net;
+﻿using CalendarCommon;
+using System.Net;
+using System.Net.Http.Headers;
+using System.Net.Http.Json;
 using System.Text;
+using System.Text.Json;
+using System.Text.Json.Nodes;
 
 namespace CalendarClient
 {
@@ -7,20 +12,8 @@ namespace CalendarClient
     {
         static void Main(string[] args)
         {
-            HttpClient client = new();
-            Task.Run(async () =>
-            {
-                var a = await client.GetAsync("http://localhost:8080/neco");
-                Console.WriteLine($"Status: {a.StatusCode.ToString()}");
-                Console.WriteLine($"content: \n{await a.Content.ReadAsStringAsync()}");
-            });
-            //Task.Run(() =>
-            //{
-            //    var a = client.GetAsync("http://localhost:8080/neco2");
-            //    Console.WriteLine(a);
-            //});
-            Task.Delay(500).Wait();
-            //req.Method = "GET";
+            Client client = new Client();
+            client.Start();
         }
     }
 }
