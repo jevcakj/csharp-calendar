@@ -204,14 +204,14 @@ namespace CalendarClient
         protected IConnection connection;
         protected Client client;
         public string CommandString { get; set; }
-        private List<CalendarEvent> events;
+        private List<CalendarEventBasic> events;
         public ListEventsCommand(IUserInterface ui, IConnection connection, Client client)
         {
             this.ui = ui;
             this.connection = connection;
             this.client = client;
             CommandString = "";
-            events = new List<CalendarEvent>();
+            events = new List<CalendarEventBasic>();
         }
         public bool CheckArguments()
         {
@@ -244,7 +244,7 @@ namespace CalendarClient
             {
                 for (int i = 0; i < numberOfDays; i++)
                 {
-                    List<CalendarEvent> events = connection.GetEvents(date.AddDays(i));
+                    List<CalendarEventBasic> events = connection.GetEvents(date.AddDays(i));
                     if (events is not null)
                     {
                         this.events.AddRange(events);
@@ -255,7 +255,7 @@ namespace CalendarClient
             {
                 for (; events.Count <= 10; date = date.AddDays(1))
                 {
-                    List<CalendarEvent> events = connection.GetEvents(date);
+                    List<CalendarEventBasic> events = connection.GetEvents(date);
                     this.events.AddRange(events);
                 }
                 if (events.Count > 10)
@@ -265,7 +265,7 @@ namespace CalendarClient
             }
             ui.ListEvents(events);
         }
-        public List<CalendarEvent> GetEvents() => events;
+        public List<CalendarEventBasic> GetEvents() => events;
     }
 
     public class NextCommand : ListEventsCommand, ICalendarCommand
@@ -411,12 +411,12 @@ namespace CalendarClient
         public void Execute()
         {
             int index = int.Parse(CommandString.Split(' ', StringSplitOptions.TrimEntries | StringSplitOptions.RemoveEmptyEntries)[1]);
-            CalendarEvent calendarEvent = client.GetListedEvent(index);
+            CalendarEventBasic calendarEvent = client.GetListedEvent(index);
             if (!ui.DeleteEvent(calendarEvent))
             {
                 return;
             }
-            connection.DeleteEvent((DateTime)calendarEvent.dateTime, (int)calendarEvent.id);
+            connection.DeleteEvent((DateTime)calendarEvent.beginning, (int)calendarEvent.id);
         }
     }
 
@@ -448,24 +448,44 @@ namespace CalendarClient
     {
         private IUserInterface ui;
         private IConnection connection;
+        private Client client;
         public string CommandString { get; set; }
-        public ShowEventCommand(IUserInterface ui, IConnection connection)
+        public ShowEventCommand(IUserInterface ui, IConnection connection, Client client)
         {
-            this.ui= ui;
-            this.connection= connection;
+            this.ui = ui;
+            this.connection = connection;
+            this.client = client;
             CommandString = "";
         }
         public bool CheckArguments()
         {
-            throw new NotImplementedException();
+            var args = CommandString.Split(' ', StringSplitOptions.TrimEntries | StringSplitOptions.RemoveEmptyEntries);
+            if (args.Length != 2)
+            {
+                return false;
+            }
+            int number;
+            if (!int.TryParse(args[1], out number))
+            {
+                return false;
+            }
+            return number >= 0 && number < client.ListLength();
         }
 
-        public ICalendarCommand Copy()
+        public ICalendarCommand Copy() => new ShowEventCommand(ui, connection, client);
+
+        public void Execute()
         {
-            throw new NotImplementedException();
+            int index = int.Parse(CommandString.Split(' ', StringSplitOptions.TrimEntries | StringSplitOptions.RemoveEmptyEntries)[1]);
+            CalendarEventBasic preview = client.GetListedEvent(index);
+            CalendarEvent calendarEvent = connection.GetEvent((DateTime)preview.beginning, (int)preview.id);
+            if (calendarEvent == null)
+            {
+                ui.ShowMessage("Unable to show full event info.");
+                return;
+            }
+            ui.ShowEvent(calendarEvent);
         }
-
-        public void Execute() { }
     }
 
     #endregion

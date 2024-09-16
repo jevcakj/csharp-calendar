@@ -84,18 +84,18 @@ namespace CalendarServer
             }
         }
 
-        public bool GetEvents(DateTime dateTime, User user, out List<CalendarEvent> calendarEvents)
+        public bool GetEvents(DateTime dateTime, User user, out List<CalendarEventBasic> calendarEvents)
         {
             var path = Path.Join(rootDirectory, user.name, $"{dateTime.Year}", $"{dateTime.Month}", $"{dateTime.Day}");
             Console.WriteLine($"Get events: {path}");
-            calendarEvents = new List<CalendarEvent>();
+            calendarEvents = new List<CalendarEventBasic>();
             if (!Path.Exists(path))
             {
                 return false;
             }
             foreach(var eventPath in Directory.GetFiles(path))
             {
-                var calEvent = JsonSerializer.Deserialize<CalendarEvent>(File.ReadAllText(eventPath));
+                var calEvent = JsonSerializer.Deserialize<CalendarEventBasic>(File.ReadAllText(eventPath));
                 if (calEvent != null)
                 {
                     calendarEvents.Add(calEvent);
@@ -126,7 +126,7 @@ namespace CalendarServer
             var path = Path.Join(rootDirectory, user.name);
             int id = e.id ?? GetNewEventId(user);
             e.id = id;
-            DateTime dateTime = (DateTime)e.dateTime;
+            DateTime dateTime = (DateTime)e.beginning;
             path = Path.Join(path, $"{dateTime.Year}", $"{dateTime.Month}", $"{dateTime.Day}");
             if (!Directory.Exists(path))
             {

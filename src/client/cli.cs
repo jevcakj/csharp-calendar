@@ -178,18 +178,23 @@ namespace CalendarClient
                 ShowMessage("Invalid time or date format");
                 return null;
             }
-            calendarEvent.dateTime = dateTime;
+            calendarEvent.beginning = dateTime;
+            calendarEvent.end = dateTime.AddHours(1);
+
+            Console.WriteLine("Place:");
+            string place = Console.ReadLine();
+            calendarEvent.place = place;
 
             Console.WriteLine("Description:");
             string description = Console.ReadLine();
-            calendarEvent.description = description;
+            calendarEvent.eventDescription = description;
 
             return calendarEvent;
         }
 
-        public bool DeleteEvent(CalendarEvent calendarEvent)
+        public bool DeleteEvent(CalendarEventBasic calendarEvent)
         {
-            Console.WriteLine($"{((DateTime)calendarEvent.dateTime).ToShortDateString()}, {((DateTime)calendarEvent.dateTime).ToShortTimeString()}, {calendarEvent.name}");
+            Console.WriteLine($"{((DateTime)calendarEvent.beginning).ToShortDateString()}, {((DateTime)calendarEvent.beginning).ToShortTimeString()}, {calendarEvent.name}");
             Console.Write("Do you want to delete this event?[N/y]:  ");
             if(Console.ReadLine() == "y")
             {
@@ -203,7 +208,7 @@ namespace CalendarClient
             throw new NotImplementedException();
         }
 
-        public void ListEvents( List<CalendarEvent> events)
+        public void ListEvents( List<CalendarEventBasic> events)
         {
             if(events is null ||  events.Count == 0)
             {
@@ -211,15 +216,19 @@ namespace CalendarClient
                 return;
             }
             int index = 0;
-            foreach( CalendarEvent calendarEvent in events)
+            foreach( CalendarEventBasic calendarEvent in events)
             {
-                Console.WriteLine($"{index++}     {((DateTime)calendarEvent.dateTime).ToShortDateString()}, {((DateTime)calendarEvent.dateTime).ToShortTimeString()}, {calendarEvent.name}");
+                Console.WriteLine($"{index++}     {((DateTime)calendarEvent.beginning).ToShortDateString()}, {((DateTime)calendarEvent.beginning).ToShortTimeString()} - {((DateTime)calendarEvent.end).ToShortDateString()}, {((DateTime)calendarEvent.end).ToShortTimeString()}, {calendarEvent.name}");
             }
         }
 
-        public void ShowEvent()
+        public void ShowEvent(CalendarEvent calendarEvent)
         {
-            throw new NotImplementedException();
+            Console.WriteLine($"Beginning:       {((DateTime)calendarEvent.beginning).ToShortDateString()}, {((DateTime)calendarEvent.beginning).ToShortTimeString()}");
+            Console.WriteLine($"End:             {((DateTime)calendarEvent.end).ToShortDateString()}, {((DateTime)calendarEvent.end).ToShortTimeString()}");
+            Console.WriteLine($"Name:            {calendarEvent.name}");
+            Console.WriteLine($"Place:           {calendarEvent.place}");
+            Console.WriteLine($"Description:\n   {calendarEvent.eventDescription}");
         }
 
         public void ShowMessage(string message)

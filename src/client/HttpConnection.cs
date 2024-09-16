@@ -101,10 +101,23 @@ namespace CalendarClient
 
         public CalendarEvent GetEvent(DateTime date, int ID)
         {
-            throw new NotImplementedException();
+            UriBuilder uriBuilder = new();
+            uriBuilder.Path = $"/{date.Year}/{date.Month}/{date.Day}/{ID}";
+            uriBuilder.Host = "localhost";
+            uriBuilder.Port = 8080;
+            var responseTask = client.GetAsync(uriBuilder.Uri);
+            responseTask.Wait();
+            var response = responseTask.Result;
+            if (!response.IsSuccessStatusCode)
+            {
+                return null;
+            }
+            var content = response.Content.ReadAsStringAsync().Result;
+            CalendarEvent calendarEvent = JsonSerializer.Deserialize<CalendarEvent>(content);
+            return calendarEvent;
         }
 
-        public List<CalendarEvent> GetEvents(DateTime date)
+        public List<CalendarEventBasic> GetEvents(DateTime date)
         {
             UriBuilder uriBuilder = new();
             uriBuilder.Path = $"/{date.Year}/{date.Month}/{date.Day}/";
@@ -118,7 +131,7 @@ namespace CalendarClient
                 return null;
             }
             var content = response.Content.ReadAsStringAsync().Result;
-            var events = JsonSerializer.Deserialize<List<CalendarEvent>>(content);
+            var events = JsonSerializer.Deserialize<List<CalendarEventBasic>>(content);
             return events;
         }
 

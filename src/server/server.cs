@@ -149,7 +149,7 @@ namespace CalendarServer
             }
             else
             {
-                List<CalendarEvent> calendarEvents;
+                List<CalendarEventBasic> calendarEvents;
                 if(!data.GetEvents(dateTime, user, out calendarEvents)){
                     rsp.StatusCode = (int)HttpStatusCode.NotFound;
                     return;

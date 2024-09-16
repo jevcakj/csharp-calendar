@@ -25,7 +25,7 @@ namespace CalendarClient
         public User user { get;  set; }
         public DateTime shownDate { get; set; }
         ViewSpan viewSpan;
-        List<CalendarEvent> eventsListed;
+        List<CalendarEventBasic> eventsListed;
         public Client()
         {
             Dictionary<string, ICalendarCommand> commands = new Dictionary<string, ICalendarCommand>();
@@ -35,7 +35,7 @@ namespace CalendarClient
             connection = new HttpConnection(defaultUser);
             shownDate = DateTime.Now;
             viewSpan = ViewSpan.Week;
-            eventsListed = new List<CalendarEvent>();
+            eventsListed = new List<CalendarEventBasic>();
 
             commands.Add("createUser", new CreateUserCommand(ui, connection));
             commands.Add("login", new LoginUserCommand(ui, connection, this));
@@ -46,7 +46,7 @@ namespace CalendarClient
             commands.Add("delete", new DeleteEventCommand(ui, connection, this));
             commands.Add("edit", new EditEventCommand(ui, connection));
             commands.Add("list", new ListEventsCommand(ui, connection, this));
-            commands.Add("show", new ShowEventCommand(ui,connection));
+            commands.Add("show", new ShowEventCommand(ui,connection, this));
             commands.Add("next", new NextCommand(ui, connection, this));
             commands.Add("previous", new PreviousCommand(ui, connection, this));
             commands.Add("current", new CurrentCommand(ui, connection, this));
@@ -121,6 +121,6 @@ namespace CalendarClient
             }
         }
         public int ListLength() => eventsListed.Count;
-        public CalendarEvent GetListedEvent(int index) => eventsListed[index];
+        public CalendarEventBasic GetListedEvent(int index) => eventsListed[index];
     }
 }
