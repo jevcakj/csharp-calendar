@@ -9,6 +9,7 @@ using CalendarCommon;
 
 namespace CalendarClient
 {
+    //TODO help, duplicate
     public interface ICalendarCommand
     {
         public string CommandString { get; set; }

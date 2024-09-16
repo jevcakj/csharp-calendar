@@ -15,9 +15,9 @@ namespace CalendarClient
         private List<ICalendarCommand> commandHistory;
         private int commandHistoryIndexer;
         public string? UserName { get; set; }
-        public CommandLineInterface(Dictionary<string, ICalendarCommand> commands)
+        public CommandLineInterface()
         {
-            this.commands = commands;
+            commands = new();
             commandHistory = new List<ICalendarCommand>();
             commandHistoryIndexer = 0;
         }
@@ -68,42 +68,19 @@ namespace CalendarClient
                 }
                 else if (key.Key == ConsoleKey.Backspace)
                 {
-                    if (sb.Length > 0)
-                    {
-                        sb.Remove(sb.Length - 1, 1);
-                        Console.Write("\b \b");
-                    }
+                    DeleteLastChar(sb);
+                }
+                else if (key.Key == ConsoleKey.Tab)
+                {
+                    TabCompletion(sb);
                 }
                 else if (key.Key == ConsoleKey.DownArrow)
                 {
-                    if (commandHistoryIndexer > 1)
-                    {
-                        commandHistoryIndexer--;
-                        ICalendarCommand command = commandHistory[commandHistory.Count - commandHistoryIndexer];
-                        sb = new StringBuilder(command.CommandString);
-                        ClearLine();
-                        WritePrompt();
-                        Console.Write(sb.ToString());
-                    }
-                    else
-                    {
-                        commandHistoryIndexer = 0;
-                        sb = new StringBuilder();
-                        ClearLine();
-                        WritePrompt();
-                    }
+                    MoveHistoryDown(sb);
                 }
                 else if (key.Key == ConsoleKey.UpArrow)
                 {
-                    if (commandHistoryIndexer < commandHistory.Count)
-                    {
-                        commandHistoryIndexer++;
-                        ICalendarCommand command = commandHistory[commandHistory.Count - commandHistoryIndexer];
-                        sb = new StringBuilder(command.CommandString);
-                        ClearLine();
-                        WritePrompt();
-                        Console.Write(sb.ToString());
-                    }
+                    MoveHistoryUp(sb);
                 }
                 else if(!Char.IsControl(key.KeyChar))
                 {
@@ -236,6 +213,11 @@ namespace CalendarClient
             Console.WriteLine(message);
         }
 
+        public void SetCommands(Dictionary<string, ICalendarCommand> commands)
+        {
+            this.commands = commands;
+        }
+
         private void ClearLine()
         {
             var a = Console.GetCursorPosition();
@@ -245,6 +227,15 @@ namespace CalendarClient
                 Console.Write(' ');
             }
             Console.SetCursorPosition(0, a.Top);
+        }
+
+        private void DeleteLastChar(StringBuilder sb)
+        {
+            if (sb.Length > 0)
+            {
+                sb.Remove(sb.Length - 1, 1);
+                Console.Write("\b \b");
+            }
         }
 
         private User GetValidPassword()
@@ -293,11 +284,7 @@ namespace CalendarClient
                 }
                 else if (key.Key == ConsoleKey.Backspace)
                 {
-                    if (sb.Length > 0)
-                    {
-                        sb.Remove(sb.Length - 1, 1);
-                        Console.Write("\b \b");
-                    }
+                    DeleteLastChar(sb);
                 }
                 else if (Char.IsLetterOrDigit(key.KeyChar) || char.IsWhiteSpace(key.KeyChar))
                 {
@@ -416,6 +403,95 @@ namespace CalendarClient
                 result = new();
                 return false;
             }
+        }
+
+        private void MoveHistoryDown(StringBuilder sb)
+        {
+            if (commandHistoryIndexer > 1)
+            {
+                commandHistoryIndexer--;
+                GetCommandFromHistory(sb);
+            }
+            else
+            {
+                commandHistoryIndexer = 0;
+                sb = new StringBuilder();
+                ClearLine();
+                WritePrompt();
+            }
+        }
+
+        private void MoveHistoryUp(StringBuilder sb)
+        {
+            if (commandHistoryIndexer < commandHistory.Count)
+            {
+                commandHistoryIndexer++;
+                GetCommandFromHistory(sb);
+            }
+        }
+
+        private void GetCommandFromHistory(StringBuilder sb)
+        {
+            ICalendarCommand command = commandHistory[commandHistory.Count - commandHistoryIndexer];
+            sb = new StringBuilder(command.CommandString);
+            ClearLine();
+            WritePrompt();
+            Console.Write(sb.ToString());
+        }
+
+        private void TabCompletion(StringBuilder sb)
+        {
+            string prefix = sb.ToString();
+            List<string> results = new List<string>();
+            foreach (var item in commands.Keys)
+            {
+                if (item.StartsWith(prefix))
+                {
+                    results.Add(item);
+                }
+            }
+
+            if(results.Count == 0)
+            {
+                return;
+            }
+            if(results.Count == 1)
+            {
+                sb.Clear();
+                sb.Append(results[0]);
+                ClearLine();
+                WritePrompt();
+                Console.Write(results[0]);
+                return;
+            }
+            else
+            {
+                Console.WriteLine();
+                foreach (var command in results)
+                {
+                    Console.Write($"{command} ");
+                }
+                Console.WriteLine();
+                sb.Clear();
+                sb.Append(LongestCommonPrefix(results));
+                WritePrompt();
+                Console.Write(sb.ToString());
+            }
+        }
+        private string LongestCommonPrefix(List<string> commands)
+        {
+            commands.Sort();
+            var first = commands.First();
+            var last = commands.Last();
+            int boundary = first.Length < last.Length ? first.Length : last.Length;
+            for(int i = 0; i < boundary; i++)
+            {
+                if(first[i] != last[i])
+                {
+                    return first.Substring(0, i);
+                }
+            }
+            return first.Substring(0, boundary);
         }
     }
 }

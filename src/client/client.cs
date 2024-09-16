@@ -21,15 +21,19 @@ namespace CalendarClient
     {
         private IUserInterface ui;
         private IConnection connection;
-        User defaultUser;
+        private User defaultUser;
         public User user { get;  set; }
+
+        private Dictionary<string, ICalendarCommand> defaultCommands;
+        private Dictionary<string, ICalendarCommand> userCommands;
+
         public DateTime shownDate { get; set; }
         ViewSpan viewSpan;
         List<CalendarEventBasic> eventsListed;
+
         public Client()
         {
-            Dictionary<string, ICalendarCommand> commands = new Dictionary<string, ICalendarCommand>();
-            ui = new CommandLineInterface(commands);
+            ui = new CommandLineInterface();
             defaultUser = new User() { name = "defaultUser", password = "" };
             user = defaultUser;
             connection = new HttpConnection(defaultUser);
@@ -37,27 +41,34 @@ namespace CalendarClient
             viewSpan = ViewSpan.Week;
             eventsListed = new List<CalendarEventBasic>();
 
-            commands.Add("createUser", new CreateUserCommand(ui, connection));
-            commands.Add("login", new LoginUserCommand(ui, connection, this));
-            commands.Add("logout", new LogoutUserCommand(ui, connection));
-            commands.Add("changeName", new ChangeUserNameCommand(ui, connection, this));
-            commands.Add("changePassword", new ChangeUserPasswordCommand(ui, connection, this));
-            commands.Add("add", new AddEventCommand(ui, connection));
-            commands.Add("delete", new DeleteEventCommand(ui, connection, this));
-            commands.Add("edit", new EditEventCommand(ui, connection, this));
-            commands.Add("list", new ListEventsCommand(ui, connection, this));
-            commands.Add("show", new ShowEventCommand(ui,connection, this));
-            commands.Add("next", new NextCommand(ui, connection, this));
-            commands.Add("previous", new PreviousCommand(ui, connection, this));
-            commands.Add("current", new CurrentCommand(ui, connection, this));
-            commands.Add("view", new ViewCommand(ui, connection, this));
-            commands.Add("exit", new ExitCommand());
+            defaultCommands = new Dictionary<string, ICalendarCommand>()
+            {
+                { "createUser", new CreateUserCommand(ui, connection) },
+                { "login", new LoginUserCommand(ui, connection, this) },
+                { "exit", new ExitCommand() }
+            };
+
+            userCommands = new Dictionary<string, ICalendarCommand>()
+            {
+                { "logout", new LogoutUserCommand(ui, connection) },
+                { "changeName", new ChangeUserNameCommand(ui, connection, this) },
+                { "changePassword", new ChangeUserPasswordCommand(ui, connection, this) },
+                { "add", new AddEventCommand(ui, connection) },
+                { "edit", new EditEventCommand(ui, connection, this) },
+                { "delete", new DeleteEventCommand(ui, connection, this) },
+                { "show", new ShowEventCommand(ui,connection, this) },
+                { "list", new ListEventsCommand(ui, connection, this) },
+                { "next", new NextCommand(ui, connection, this) },
+                { "previous", new PreviousCommand(ui, connection, this) },
+                { "current", new CurrentCommand(ui, connection, this) },
+                { "view", new ViewCommand(ui, connection, this) },
+                { "exit", new ExitCommand() }
+            };
+            ((CommandLineInterface)ui).SetCommands(defaultCommands);
         }
 
         public void Start()
         {
-
-            //TODO napsat funkci userloggedid obalenou 
             while (true)
             {
                 ICalendarCommand command = ui.GetInput();
@@ -67,6 +78,7 @@ namespace CalendarClient
                 }
                 if(command is LogoutUserCommand)
                 {
+                    ((CommandLineInterface)ui).SetCommands(defaultCommands);
                     user = defaultUser;
                 }
                 if(command is ListEventsCommand list)
@@ -77,6 +89,7 @@ namespace CalendarClient
 
                 if (command is LoginUserCommand)
                 {
+                    ((CommandLineInterface)ui).SetCommands(userCommands);
                     ListEventsCommand listEvents = new ListEventsCommand(ui, connection, this);
                     listEvents.Execute();
                     eventsListed = listEvents.GetEvents();
