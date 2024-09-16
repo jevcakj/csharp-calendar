@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Data;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
@@ -157,29 +158,13 @@ namespace CalendarClient
             Console.WriteLine("Name:");
             calendarEvent.name = Console.ReadLine();
 
-            StringBuilder stringBuilder = new StringBuilder();
+            Console.WriteLine("Beginning:");
+            DateTime beginning = ReadDateTime(DateTime.Now);
+            calendarEvent.beginning = beginning;
 
-            Console.WriteLine("Date:");
-            var position = Console.GetCursorPosition();
-            Console.WriteLine("dd/mm/yyyy");
-            Console.SetCursorPosition(position.Left, position.Top);
-            stringBuilder.Append(Console.ReadLine());
-            stringBuilder.Append(' ');
-
-            Console.WriteLine("Time: ");
-            position = Console.GetCursorPosition();
-            Console.WriteLine("hh:mm");
-            Console.SetCursorPosition(position.Left, position.Top);
-            stringBuilder.Append(Console.ReadLine());
-
-            DateTime dateTime;
-            if(!DateTime.TryParse(stringBuilder.ToString(), out dateTime))
-            {
-                ShowMessage("Invalid time or date format");
-                return null;
-            }
-            calendarEvent.beginning = dateTime;
-            calendarEvent.end = dateTime.AddHours(1);
+            Console.WriteLine("end:");
+            DateTime end = ReadDateTime(beginning.AddHours(1));
+            calendarEvent.end = end;
 
             Console.WriteLine("Place:");
             string place = Console.ReadLine();
@@ -310,6 +295,112 @@ namespace CalendarClient
         private void WritePrompt()
         {
             Console.Write(UserName is null ? "Calendar@ " : $"Calendar@{UserName} ");
+        }
+
+        private string ReadStringWithExample(string example)
+        {
+            var cursorePos = Console.GetCursorPosition();
+            StringBuilder sb = new StringBuilder();
+            ConsoleKeyInfo key;
+
+            Console.Write(example);
+            Console.SetCursorPosition(cursorePos.Left, cursorePos.Top);
+
+            while (true)
+            {
+                key = Console.ReadKey(true);
+                if (key.Key == ConsoleKey.Enter)
+                {
+                    Console.WriteLine();
+                    return sb.ToString();
+                }
+                else if (key.Key == ConsoleKey.Backspace)
+                {
+                    if (sb.Length > 0)
+                    {
+                        sb.Remove(sb.Length - 1, 1);
+                        Console.Write("\b \b");
+                    }
+                    if (sb.Length == 0)
+                    {
+                        Console.Write(example);
+                        Console.SetCursorPosition(cursorePos.Left, cursorePos.Top);
+                    }
+                }
+                else if (!char.IsControl(key.KeyChar))
+                {
+                    if (sb.Length == 0)
+                    {
+                        ClearLine();
+                    }
+                    sb.Append(key.KeyChar);
+                    Console.Write(key.KeyChar);
+                }
+            }
+        }
+
+        private DateTime ReadDateTime(DateTime example)
+        {
+            DateTime date;
+            string exampleString = $"{example.ToShortDateString()} {example.ToShortTimeString()}";
+            while (true)
+            {
+                string dateString = ReadStringWithExample(exampleString);
+                if(dateString == null || dateString == "")
+                {
+                    dateString = exampleString;
+                }
+                if(TryParseDateTime(dateString, example, out date))
+                {
+                    return date;
+                }
+                else
+                {
+                    ShowMessage("Invalid date or time.");
+                }
+            }
+        }
+        private bool TryParseDateTime(string input, DateTime example,  out DateTime result)
+        {
+            var splitted = input.Split(' ', StringSplitOptions.RemoveEmptyEntries | StringSplitOptions.TrimEntries);
+            if(splitted.Length == 1)
+            {
+                DateOnly date;
+                TimeOnly time;
+                if(DateOnly.TryParse(input, out date))
+                {
+                    result = new(date, new TimeOnly(example.Hour, example.Minute));
+                    return true;
+                }
+                else if(TimeOnly.TryParse(input, out time))
+                {
+                    result = new(new DateOnly(example.Year, example.Month, example.Day), time);
+                    return true;
+                }
+                else
+                {
+                    result = new();
+                    return false;
+                }
+
+            }
+            else if(splitted.Length == 2)
+            {
+                if(DateTime.TryParse(input, out result))
+                {
+                    return true;
+                }
+                else
+                {
+                    result = new();
+                    return false;
+                }
+            }
+            else
+            {
+                result = new();
+                return false;
+            }
         }
     }
 }
