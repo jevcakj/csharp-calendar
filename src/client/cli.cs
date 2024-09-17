@@ -139,8 +139,7 @@ namespace CalendarClient
             DateTime beginning = ReadDateTime(DateTime.Now);
             calendarEvent.beginning = beginning;
 
-            Console.WriteLine("end:");
-            calendarEvent.end = ReadDateTime(beginning.AddHours(1));
+            calendarEvent.end = GetValidEndDate( beginning, beginning.AddHours(1));
 
             Console.WriteLine("Place:");
             calendarEvent.place = Console.ReadLine();
@@ -171,8 +170,7 @@ namespace CalendarClient
             Console.WriteLine("Beginning:");
             calendarEvent.beginning = ReadDateTime((DateTime)calendarEvent.beginning);
 
-            Console.WriteLine("end:");
-            calendarEvent.end = ReadDateTime((DateTime)calendarEvent.end);
+            calendarEvent.end = GetValidEndDate((DateTime)calendarEvent.beginning, (DateTime)calendarEvent.end);
 
             Console.WriteLine("Place:");
             string place = ReadStringWithExample(calendarEvent.place);
@@ -341,6 +339,26 @@ namespace CalendarClient
             }
         }
 
+        private DateTime GetValidEndDate(DateTime beginning, DateTime example)
+        {
+            while (true)
+            {
+                Console.WriteLine("End:");
+                DateTime end = ReadDateTime(example);
+                if(beginning < end)
+                {
+                    return end;
+                }
+                var curr = Console.CursorTop;
+                for (int i = 1; i <= 2; i++)
+                {
+                    Console.SetCursorPosition(0, curr - i);
+                    ClearLine();
+                }
+                Console.WriteLine("End time must be greater than beginning time.");
+            }
+        }
+
         private DateTime ReadDateTime(DateTime example)
         {
             DateTime date;
@@ -362,6 +380,7 @@ namespace CalendarClient
                 }
             }
         }
+
         private bool TryParseDateTime(string input, DateTime example,  out DateTime result)
         {
             var splitted = input.Split(' ', StringSplitOptions.RemoveEmptyEntries | StringSplitOptions.TrimEntries);
