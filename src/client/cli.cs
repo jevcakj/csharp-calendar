@@ -35,7 +35,7 @@ namespace CalendarClient
                 {
                     
                     string commandWhole = sb.ToString();
-                    string commandName = commandWhole.Split(' ', StringSplitOptions.RemoveEmptyEntries | StringSplitOptions.TrimEntries)[0];
+                    string commandName = commandWhole.Length == 0 ? "" : commandWhole.Split(' ', StringSplitOptions.RemoveEmptyEntries | StringSplitOptions.TrimEntries)[0];
                     ICalendarCommand? commandPrototype;
                     commands.TryGetValue(commandName, out commandPrototype);
                     if (commandPrototype != null)
