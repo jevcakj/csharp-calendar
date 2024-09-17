@@ -154,6 +154,7 @@ namespace CalendarServer
                     rsp.StatusCode = (int)HttpStatusCode.NotFound;
                     return;
                 }
+                calendarEvents.Sort();
                 content = JsonSerializer.Serialize(calendarEvents);
             }
             WriteContent(rsp, content);

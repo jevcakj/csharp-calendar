@@ -6,7 +6,7 @@ using System.Threading.Tasks;
 
 namespace CalendarCommon
 {
-    public class CalendarEventBasic
+    public class CalendarEventBasic : IComparable<CalendarEventBasic>
     {
         public int? id {  get; set; }
         public string? name { get; set; }
@@ -14,6 +14,22 @@ namespace CalendarCommon
         public DateTime? end {  get; set; }
 
         public CalendarEventBasic() { }
+
+        public int CompareTo(CalendarEventBasic? other)
+        {
+            if(other is null) return 1;
+
+            int result = beginning?.CompareTo(other.beginning) ?? -1;
+            if(result < 0) return -1;
+            if(result > 0) return 1;
+
+            result = end?.CompareTo(other.end) ?? -1;
+            if(result < 0) return -1;
+            if(result > 0) return 1;
+
+            result = name?.CompareTo(other.name) ?? -1;
+            return result;
+        }
     }
     public class CalendarEvent : CalendarEventBasic
     {
