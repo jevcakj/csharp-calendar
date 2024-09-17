@@ -434,7 +434,7 @@ namespace CalendarClient
             else
             {
                 commandHistoryIndexer = 0;
-                sb = new StringBuilder();
+                sb.Clear();
                 ClearLine();
                 WritePrompt();
             }
@@ -452,7 +452,8 @@ namespace CalendarClient
         private void GetCommandFromHistory(StringBuilder sb)
         {
             ICalendarCommand command = commandHistory[commandHistory.Count - commandHistoryIndexer];
-            sb = new StringBuilder(command.CommandString);
+            sb.Clear();
+            sb.Append(command.CommandString);
             ClearLine();
             WritePrompt();
             Console.Write(sb.ToString());
