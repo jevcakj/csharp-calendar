@@ -73,6 +73,7 @@ namespace CalendarClient
             while (true)
             {
                 ICalendarCommand command = ui.GetInput();
+
                 if(command is ExitCommand)
                 {
                     return;
@@ -81,11 +82,15 @@ namespace CalendarClient
                 {
                     ((CommandLineInterface)ui).SetCommands(defaultCommands);
                     user = defaultUser;
+                    shownDate = DateTime.Now;
+                    viewSpan = ViewSpan.Week;
+                    eventsListed = new();
                 }
                 if(command is ListEventsCommand list)
                 {
                     eventsListed = list.GetEvents();
                 }
+
                 command.Execute();
 
                 if (command is LoginUserCommand)
