@@ -9,7 +9,6 @@ using CalendarCommon;
 
 namespace CalendarClient
 {
-    //TODO help
     public interface ICalendarCommand
     {
         public string CommandString { get; set; }
@@ -76,7 +75,7 @@ namespace CalendarClient
             if (connection.ChangeUser(user))
             {
                 client.user = user;
-                ui.UserName = user.name;
+                ui.UserName = user.name!;
             }
             else
             {
@@ -146,7 +145,7 @@ namespace CalendarClient
             if (connection.SetClientUser(user))
             {
                 client.user = user;
-                ui.UserName = user.name;
+                ui.UserName = user.name!;
             }
             else
             {
@@ -259,8 +258,8 @@ namespace CalendarClient
             {
                 for (int i = 0; i < numberOfDays; i++)
                 {
-                    List<CalendarEventBasic> events = connection.GetEvents(date.AddDays(i));
-                    if (events is not null)
+                    List<CalendarEventBasic> events;
+                    if (connection.GetEvents(date.AddDays(i), out events))
                     {
                         this.events.AddRange(events);
                     }
@@ -270,8 +269,11 @@ namespace CalendarClient
             {
                 for (; events.Count <= 10; date = date.AddDays(1))
                 {
-                    List<CalendarEventBasic> events = connection.GetEvents(date);
-                    this.events.AddRange(events);
+                    List<CalendarEventBasic> events;
+                    if(connection.GetEvents(date, out events))
+                    {
+                        this.events.AddRange(events);
+                    }
                 }
                 if (events.Count > 10)
                 {
@@ -437,11 +439,16 @@ namespace CalendarClient
         {
             int index = int.Parse(CommandString.Split(' ', StringSplitOptions.TrimEntries | StringSplitOptions.RemoveEmptyEntries)[1]);
             CalendarEventBasic calendarEvent = client.GetListedEvent(index);
+            if (!calendarEvent.IsValid())
+            {
+                ui.ShowMessage("Unable to delete event.");
+                return;
+            }
             if (!ui.DeleteEvent(calendarEvent))
             {
                 return;
             }
-            connection.DeleteEvent((DateTime)calendarEvent.beginning, (int)calendarEvent.id);
+            connection.DeleteEvent((DateTime)calendarEvent.beginning!, (int)calendarEvent.id!);
         }
     }
 
@@ -481,8 +488,8 @@ namespace CalendarClient
         {
             int index = int.Parse(CommandString.Split(' ', StringSplitOptions.TrimEntries | StringSplitOptions.RemoveEmptyEntries)[1]);
             CalendarEventBasic preview = client.GetListedEvent(index);
-            CalendarEvent calendarEvent = connection.GetEvent((DateTime)preview.beginning, (int)preview.id);
-            if (calendarEvent is null)
+            CalendarEvent calendarEvent;
+            if (!preview.IsValid() || !connection.GetEvent((DateTime)preview.beginning!, (int)preview.id!, out calendarEvent))
             {
                 ui.ShowMessage("Unable to get full event info. Try it again.");
                 return;
@@ -531,8 +538,9 @@ namespace CalendarClient
         {
             int index = int.Parse(CommandString.Split(' ', StringSplitOptions.TrimEntries | StringSplitOptions.RemoveEmptyEntries)[1]);
             CalendarEventBasic preview = client.GetListedEvent(index);
-            CalendarEvent calendarEvent = connection.GetEvent((DateTime)preview.beginning, (int)preview.id);
-            if (calendarEvent == null)
+            CalendarEvent calendarEvent;
+            ;
+            if (!preview.IsValid() || !connection.GetEvent((DateTime)preview.beginning!, (int)preview.id!, out calendarEvent))
             {
                 ui.ShowMessage("Unable to show full event info.");
                 return;
@@ -579,8 +587,8 @@ namespace CalendarClient
         {
             int index = int.Parse(CommandString.Split(' ', StringSplitOptions.TrimEntries | StringSplitOptions.RemoveEmptyEntries)[1]);
             CalendarEventBasic preview = client.GetListedEvent(index);
-            CalendarEvent calendarEvent = connection.GetEvent((DateTime)preview.beginning, (int)preview.id);
-            if (calendarEvent is null)
+            CalendarEvent calendarEvent;
+            if (!preview.IsValid() || !connection.GetEvent((DateTime)preview.beginning!, (int)preview.id!, out calendarEvent))
             {
                 ui.ShowMessage("Unable to get full event info. Try it again.");
                 return;

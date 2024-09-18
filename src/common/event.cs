@@ -15,9 +15,11 @@ namespace CalendarCommon
 
         public CalendarEventBasic() { }
 
+        public bool IsValid() => id != null && name != null && beginning != null && end != null;
+
         public int CompareTo(CalendarEventBasic? other)
         {
-            if(other is null) return 1;
+            if (other is null) return 1;
 
             int result = beginning?.CompareTo(other.beginning) ?? -1;
             if(result < 0) return -1;
@@ -31,6 +33,7 @@ namespace CalendarCommon
             return result;
         }
     }
+
     public class CalendarEvent : CalendarEventBasic
     {
         public string? eventDescription { get; set; }

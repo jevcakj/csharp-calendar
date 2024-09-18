@@ -1,6 +1,7 @@
 ﻿using CalendarCommon;
 using Microsoft.Win32;
 using System;
+using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
@@ -15,8 +16,8 @@ namespace CalendarClient
         public bool CreateUser(User user);
         public bool ChangeUser(User newUser);
         public bool SaveEvent(CalendarEvent calendarEvent);
-        public CalendarEvent GetEvent(DateTime date, int ID);
-        public List<CalendarEventBasic> GetEvents(DateTime dateBegin);
+        public bool GetEvent(DateTime date, int ID, out CalendarEvent calendarEvent);
+        public bool GetEvents(DateTime dateBegin, out List<CalendarEventBasic> calendarEvents);
         public bool DeleteEvent(DateTime date, int ID);
     }
 }

@@ -14,12 +14,13 @@ namespace CalendarClient
         private Dictionary<string, ICalendarCommand> commands;
         private List<ICalendarCommand> commandHistory;
         private int commandHistoryIndexer;
-        public string? UserName { get; set; }
+        public string UserName { get; set; }
         public CommandLineInterface()
         {
             commands = new();
             commandHistory = new List<ICalendarCommand>();
             commandHistoryIndexer = 0;
+            UserName = string.Empty;
         }
 
         public ICalendarCommand GetInput()
@@ -92,18 +93,15 @@ namespace CalendarClient
 
         public User CreateUser()
         {
-            Console.WriteLine("Name:");
-            string name = Console.ReadLine();
-
+            string name = GetValidStringProperty("Name");
             User user = GetValidPassword();
             user.name = name;
             return user;
         }
 
         public User ChangeUserName()
-        {
-            Console.WriteLine("Name:");
-            string name = Console.ReadLine();
+        { 
+            string name = GetValidStringProperty("New name:");
             return new User() { name = name };
         }
 
@@ -115,7 +113,7 @@ namespace CalendarClient
         public User LoginUser()
         {
             Console.WriteLine("Name:");
-            string name = Console.ReadLine();
+            string? name = Console.ReadLine();
             Console.WriteLine("Password:");
             string password;
             ReadPassword(out password);
@@ -125,15 +123,14 @@ namespace CalendarClient
 
         public void LogoutUser()
         {
-            UserName = null;
+            UserName = string.Empty;
             commandHistory.Clear();
         }
 
         public CalendarEvent AddEvent()
         {
             CalendarEvent calendarEvent = new CalendarEvent();
-            Console.WriteLine("Name:");
-            calendarEvent.name = Console.ReadLine();
+            calendarEvent.name = GetValidStringProperty("Name");
 
             Console.WriteLine("Beginning:");
             DateTime beginning = ReadDateTime(DateTime.Now);
@@ -152,7 +149,7 @@ namespace CalendarClient
 
         public bool DeleteEvent(CalendarEventBasic calendarEvent)
         {
-            Console.WriteLine($"{((DateTime)calendarEvent.beginning).ToShortDateString()}, {((DateTime)calendarEvent.beginning).ToShortTimeString()}, {calendarEvent.name}");
+            Console.WriteLine($"{calendarEvent.beginning?.ToShortDateString()}, {calendarEvent.beginning?.ToShortTimeString()}, {calendarEvent.name}");
             Console.Write("Do you want to delete this event?[N/y]:  ");
             if(Console.ReadLine() == "y")
             {
@@ -164,20 +161,20 @@ namespace CalendarClient
         public CalendarEvent EditEvent(CalendarEvent calendarEvent)
         {
             Console.WriteLine("Name:");
-            string name = ReadStringWithExample(calendarEvent.name);
+            string name = ReadStringWithExample(calendarEvent.name!);
             if (!string.IsNullOrEmpty(name))    { calendarEvent.name = name; }
 
             Console.WriteLine("Beginning:");
-            calendarEvent.beginning = ReadDateTime((DateTime)calendarEvent.beginning);
+            calendarEvent.beginning = ReadDateTime((DateTime)calendarEvent.beginning!);
 
-            calendarEvent.end = GetValidEndDate((DateTime)calendarEvent.beginning, (DateTime)calendarEvent.end);
+            calendarEvent.end = GetValidEndDate((DateTime)calendarEvent.beginning!, (DateTime)calendarEvent.end!);
 
             Console.WriteLine("Place:");
-            string place = ReadStringWithExample(calendarEvent.place);
+            string place = ReadStringWithExample(calendarEvent.place ?? "");
             if (!string.IsNullOrEmpty(place))   { calendarEvent.place = place; }
 
             Console.WriteLine("Description:");
-            string description = ReadStringWithExample(calendarEvent.eventDescription);
+            string description = ReadStringWithExample(calendarEvent.eventDescription ?? "");
             if(!string.IsNullOrEmpty(description)) { calendarEvent.eventDescription = description; }
 
             return calendarEvent;
@@ -193,7 +190,7 @@ namespace CalendarClient
             int index = 0;
             foreach( CalendarEventBasic calendarEvent in events)
             {
-                Console.WriteLine($"{index++}     {((DateTime)calendarEvent.beginning).ToShortDateString()}, {((DateTime)calendarEvent.beginning).ToShortTimeString()} - {((DateTime)calendarEvent.end).ToShortDateString()}, {((DateTime)calendarEvent.end).ToShortTimeString()}, {calendarEvent.name}");
+                Console.WriteLine($"{index++}     {calendarEvent.beginning?.ToShortDateString()}, {calendarEvent.beginning?.ToShortTimeString()} - {calendarEvent.end?.ToShortDateString()}, {calendarEvent.end?.ToShortTimeString()}, {calendarEvent.name}");
             }
         }
 
@@ -207,8 +204,8 @@ namespace CalendarClient
 
         public void ShowEvent(CalendarEvent calendarEvent)
         {
-            Console.WriteLine($"Beginning:       {((DateTime)calendarEvent.beginning).ToShortDateString()}, {((DateTime)calendarEvent.beginning).ToShortTimeString()}");
-            Console.WriteLine($"End:             {((DateTime)calendarEvent.end).ToShortDateString()}, {((DateTime)calendarEvent.end).ToShortTimeString()}");
+            Console.WriteLine($"Beginning:       {calendarEvent.beginning?.ToShortDateString()}, {calendarEvent.beginning?.ToShortTimeString()}");
+            Console.WriteLine($"End:             {calendarEvent.end?.ToShortDateString()}, {calendarEvent.end?.ToShortTimeString()}");
             Console.WriteLine($"Name:            {calendarEvent.name}");
             Console.WriteLine($"Place:           {calendarEvent.place}");
             Console.WriteLine($"Description:\n   {calendarEvent.eventDescription}");
@@ -241,6 +238,26 @@ namespace CalendarClient
             {
                 sb.Remove(sb.Length - 1, 1);
                 Console.Write("\b \b");
+            }
+        }
+
+        private string GetValidStringProperty(string propertyName)
+        {
+            while (true)
+            {
+                Console.WriteLine($"{propertyName}:");
+                string? value = Console.ReadLine();
+                if (!string.IsNullOrEmpty(value))
+                {
+                    return value;
+                }
+                var cursorPos = Console.CursorTop;
+                for (int i = 1; i <= 2; i++)
+                {
+                    Console.SetCursorPosition(0, cursorPos - i);
+                    ClearLine();
+                }
+                Console.WriteLine("Name is not valid. Try again.");
             }
         }
 

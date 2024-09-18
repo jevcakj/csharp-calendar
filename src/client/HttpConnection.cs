@@ -1,5 +1,6 @@
 ﻿using CalendarCommon;
 using System;
+using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
 using System.Net.Http.Headers;
@@ -35,8 +36,6 @@ namespace CalendarClient
             var responseTask = client.PostAsync(uriBuilder.Uri, content);
             responseTask.Wait();
             var response = responseTask.Result;
-            //TODO nejak vratit duvod failu
-            //var str = response.Content.ReadAsStringAsync().Result;
             if (response.IsSuccessStatusCode)
             {
                 return true;
@@ -99,7 +98,7 @@ namespace CalendarClient
             return true;
         }
 
-        public CalendarEvent GetEvent(DateTime date, int ID)
+        public bool GetEvent(DateTime date, int ID, out CalendarEvent calendarEvent)
         {
             UriBuilder uriBuilder = new();
             uriBuilder.Path = $"/{date.Year}/{date.Month}/{date.Day}/{ID}";
@@ -110,14 +109,21 @@ namespace CalendarClient
             var response = responseTask.Result;
             if (!response.IsSuccessStatusCode)
             {
-                return null;
+                calendarEvent = new();
+                return false;
             }
             var content = response.Content.ReadAsStringAsync().Result;
-            CalendarEvent calendarEvent = JsonSerializer.Deserialize<CalendarEvent>(content);
-            return calendarEvent;
+            var calendarEventNull = JsonSerializer.Deserialize<CalendarEvent>(content);
+            if( calendarEventNull is null)
+            {
+                calendarEvent = new();
+                return false;
+            }
+            calendarEvent = calendarEventNull;
+            return true;
         }
 
-        public List<CalendarEventBasic> GetEvents(DateTime date)
+        public bool GetEvents(DateTime date, out List<CalendarEventBasic> calendarEvents)
         {
             UriBuilder uriBuilder = new();
             uriBuilder.Path = $"/{date.Year}/{date.Month}/{date.Day}/";
@@ -128,11 +134,18 @@ namespace CalendarClient
             var response = responseTask.Result;
             if (!response.IsSuccessStatusCode)
             {
-                return null;
+                calendarEvents = new List<CalendarEventBasic>();
+                return false;
             }
             var content = response.Content.ReadAsStringAsync().Result;
-            var events = JsonSerializer.Deserialize<List<CalendarEventBasic>>(content);
-            return events;
+            var calendarEventsNull = JsonSerializer.Deserialize<List<CalendarEventBasic>>(content);
+            if(calendarEventsNull is null)
+            {
+                calendarEvents = new List<CalendarEventBasic>();
+                return false;
+            }
+            calendarEvents = calendarEventsNull;
+            return true;
         }
 
         public void SetClientDefaultUser()
