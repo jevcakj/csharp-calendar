@@ -9,7 +9,7 @@ using CalendarCommon;
 
 namespace CalendarClient
 {
-    //TODO help, duplicate
+    //TODO help
     public interface ICalendarCommand
     {
         public string CommandString { get; set; }
@@ -17,6 +17,7 @@ namespace CalendarClient
         void Execute();
         bool CheckArguments();
         ICalendarCommand Copy();
+        string Help();
     }
 
     public class CreateUserCommand : ICalendarCommand
@@ -46,6 +47,7 @@ namespace CalendarClient
                 CommandString = CommandString
             };
         }
+        public string Help() => "createUser: Creates a new user in the calendar system.";
     }
 
     public class ChangeUserNameCommand : ICalendarCommand
@@ -64,6 +66,8 @@ namespace CalendarClient
         public bool CheckArguments() => CommandString.Split(' ', StringSplitOptions.TrimEntries | StringSplitOptions.RemoveEmptyEntries).Length == 1;
 
         public ICalendarCommand Copy() => new ChangeUserNameCommand(ui, connection, client);
+
+        public string Help() => "changeName: Changes the name of the current user.";
 
         public void Execute()
         {
@@ -97,6 +101,8 @@ namespace CalendarClient
         public bool CheckArguments() => CommandString.Split(' ', StringSplitOptions.TrimEntries | StringSplitOptions.RemoveEmptyEntries).Length == 1;
 
         public ICalendarCommand Copy() => new ChangeUserPasswordCommand(ui, connection, client);
+
+        public string Help() => "changePassword: Changes the password of the current user.";
 
         public void Execute()
         {
@@ -132,6 +138,8 @@ namespace CalendarClient
 
         public ICalendarCommand Copy() => new LoginUserCommand(ui, connection, client);
 
+        public string Help() => "login: Logs the user into the calendar system.";
+
         public void Execute()
         {
             User user = ui.LoginUser();
@@ -163,6 +171,8 @@ namespace CalendarClient
 
         public ICalendarCommand Copy() => new LogoutUserCommand(ui, connection);
 
+        public string Help() => "logout: Logs the user out of the calendar system.";
+
         public void Execute()
         {
             ui.LogoutUser();
@@ -184,6 +194,8 @@ namespace CalendarClient
         public bool CheckArguments() => CommandString.Split(' ', StringSplitOptions.TrimEntries | StringSplitOptions.RemoveEmptyEntries).Length == 1;
 
         public ICalendarCommand Copy() => new AddEventCommand(ui, connection);
+
+        public string Help() => "add: Adds a new event to the calendar.";
 
         public void Execute()
         {
@@ -231,6 +243,8 @@ namespace CalendarClient
 
         public ICalendarCommand Copy() => new ListEventsCommand(ui, connection, client);
 
+        public string Help() => "list: Lists the events in the user's calendar.";
+
         public void Execute()
         {
             string[] args = CommandString.Split(' ', StringSplitOptions.TrimEntries | StringSplitOptions.RemoveEmptyEntries);
@@ -276,6 +290,8 @@ namespace CalendarClient
 
         public new ICalendarCommand Copy() => new NextCommand(ui, connection, client);
 
+        public new string Help() => "next: Shows the events for the next week/month.";
+
         public new void Execute()
         {
             client.shownDate = client.shownDate.AddDays(7);
@@ -291,6 +307,8 @@ namespace CalendarClient
 
         public new ICalendarCommand Copy() => new PreviousCommand(ui, connection, client);
 
+        public new string Help() => "previous: Shows the events for the previous week/month.";
+
         public new void Execute()
         {
             client.shownDate = client.shownDate.AddDays(-7);
@@ -304,6 +322,8 @@ namespace CalendarClient
         public new bool CheckArguments() => CommandString.Split(' ', StringSplitOptions.TrimEntries | StringSplitOptions.RemoveEmptyEntries).Length == 1;
 
         public new ICalendarCommand Copy() => new CurrentCommand(ui, connection, client);
+
+        public new string Help() => "current: Shows the events for the current week/month.";
 
         public new void Execute()
         {
@@ -342,6 +362,8 @@ namespace CalendarClient
 
         public ICalendarCommand Copy() => new ViewCommand(ui, connection, client);
 
+        public string Help() => "view [time span]: Views the events for a specified time span (week, month, or upcoming).";
+
         public void Execute()
         {
             string[] args = CommandString.Split(' ', StringSplitOptions.TrimEntries | StringSplitOptions.RemoveEmptyEntries);
@@ -373,6 +395,8 @@ namespace CalendarClient
         public bool CheckArguments() => true;
 
         public ICalendarCommand Copy() => new ExitCommand();
+
+        public string Help() => "exit: Exits the application.";
 
         public void Execute() { }
     }
@@ -406,6 +430,8 @@ namespace CalendarClient
         }
 
         public ICalendarCommand Copy() => new DeleteEventCommand(ui, connection, client);
+
+        public string Help() => "delete [id]: Deletes the event with the specified ID.";
 
         public void Execute()
         {
@@ -448,6 +474,8 @@ namespace CalendarClient
         }
 
         public ICalendarCommand Copy() => new EditEventCommand(ui,connection, client);
+
+        public string Help() => "edit [id]: Edits the event with the specified ID.";
 
         public void Execute()
         {
@@ -497,6 +525,8 @@ namespace CalendarClient
 
         public ICalendarCommand Copy() => new ShowEventCommand(ui, connection, client);
 
+        public string Help() => "show [id]: Displays the details of the event with the specified ID.";
+
         public void Execute()
         {
             int index = int.Parse(CommandString.Split(' ', StringSplitOptions.TrimEntries | StringSplitOptions.RemoveEmptyEntries)[1]);
@@ -543,6 +573,8 @@ namespace CalendarClient
 
         public ICalendarCommand Copy() => new DuplicateEventCommand(ui, connection, client);
 
+        public string Help() => "duplicate [id]: Duplicates the event with the specified ID.";
+
         public void Execute()
         {
             int index = int.Parse(CommandString.Split(' ', StringSplitOptions.TrimEntries | StringSplitOptions.RemoveEmptyEntries)[1]);
@@ -559,6 +591,29 @@ namespace CalendarClient
             {
                 ui.ShowMessage("Saving event was not successfull. Try it again.");
             }
+        }
+    }
+
+    public class HelpCommand : ICalendarCommand
+    {
+        private IUserInterface ui;
+        public string CommandString { get; set; }
+
+        public HelpCommand(IUserInterface ui)
+        {
+            this.ui = ui;
+            CommandString = "";
+        }
+
+        public bool CheckArguments() => CommandString.Split(' ', StringSplitOptions.TrimEntries | StringSplitOptions.RemoveEmptyEntries).Length == 1;
+
+        public ICalendarCommand Copy() => new HelpCommand(ui);
+
+        public string Help() => "help: Shows the help information for available commands.";
+
+        public void Execute()
+        {
+            ui.Help();
         }
     }
 }

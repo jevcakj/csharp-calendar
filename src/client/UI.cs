@@ -21,6 +21,7 @@ namespace CalendarClient
         public CalendarEvent EditEvent(CalendarEvent calendarEvent);
         public void ShowEvent(CalendarEvent calendarEvent);
         public void ListEvents( List<CalendarEventBasic> events);
+        public void Help();
         public void ShowMessage(string message);
     }
 }

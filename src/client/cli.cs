@@ -197,6 +197,14 @@ namespace CalendarClient
             }
         }
 
+        public void Help()
+        {
+            foreach(var command in commands.Values)
+            {
+                Console.WriteLine(command.Help());
+            }
+        }
+
         public void ShowEvent(CalendarEvent calendarEvent)
         {
             Console.WriteLine($"Beginning:       {((DateTime)calendarEvent.beginning).ToShortDateString()}, {((DateTime)calendarEvent.beginning).ToShortTimeString()}");

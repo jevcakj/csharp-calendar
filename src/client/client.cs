@@ -43,6 +43,7 @@ namespace CalendarClient
 
             defaultCommands = new Dictionary<string, ICalendarCommand>()
             {
+                { "help", new HelpCommand(ui) },
                 { "createUser", new CreateUserCommand(ui, connection) },
                 { "login", new LoginUserCommand(ui, connection, this) },
                 { "exit", new ExitCommand() }
@@ -50,6 +51,7 @@ namespace CalendarClient
 
             userCommands = new Dictionary<string, ICalendarCommand>()
             {
+                { "help", new HelpCommand(ui) },
                 { "logout", new LogoutUserCommand(ui, connection) },
                 { "changeName", new ChangeUserNameCommand(ui, connection, this) },
                 { "changePassword", new ChangeUserPasswordCommand(ui, connection, this) },
@@ -70,6 +72,7 @@ namespace CalendarClient
 
         public void Start()
         {
+            new HelpCommand(ui).Execute();
             while (true)
             {
                 ICalendarCommand command = ui.GetInput();
