@@ -158,26 +158,29 @@ namespace CalendarClient
             return false;
         }
 
-        public CalendarEvent EditEvent(CalendarEvent calendarEvent)
+        public CalendarEvent EditEvent(CalendarEvent oldCalendarEvent)
         {
+            CalendarEvent newCalendarEvent = new CalendarEvent();
+            newCalendarEvent.id = oldCalendarEvent.id;
+
             Console.WriteLine("Name:");
-            string name = ReadStringWithExample(calendarEvent.name!);
-            if (!string.IsNullOrEmpty(name))    { calendarEvent.name = name; }
+            string name = ReadStringWithExample(oldCalendarEvent.name!);
+            newCalendarEvent.name =  string.IsNullOrEmpty(name) ? oldCalendarEvent.name : name;
 
             Console.WriteLine("Beginning:");
-            calendarEvent.beginning = ReadDateTime((DateTime)calendarEvent.beginning!);
+            newCalendarEvent.beginning = ReadDateTime((DateTime)oldCalendarEvent.beginning!);
 
-            calendarEvent.end = GetValidEndDate((DateTime)calendarEvent.beginning!, (DateTime)calendarEvent.end!);
+            newCalendarEvent.end = GetValidEndDate((DateTime)oldCalendarEvent.beginning!, (DateTime)oldCalendarEvent.end!);
 
             Console.WriteLine("Place:");
-            string place = ReadStringWithExample(calendarEvent.place ?? "");
-            if (!string.IsNullOrEmpty(place))   { calendarEvent.place = place; }
+            string place = ReadStringWithExample(oldCalendarEvent.place ?? "");
+            newCalendarEvent.place = string.IsNullOrEmpty(place) ? oldCalendarEvent.place : place;
 
             Console.WriteLine("Description:");
-            string description = ReadStringWithExample(calendarEvent.eventDescription ?? "");
-            if(!string.IsNullOrEmpty(description)) { calendarEvent.eventDescription = description; }
+            string description = ReadStringWithExample(oldCalendarEvent.eventDescription ?? "");
+            newCalendarEvent.eventDescription = string.IsNullOrEmpty(description) ? oldCalendarEvent.eventDescription : description;
 
-            return calendarEvent;
+            return newCalendarEvent;
         }
 
         public void ListEvents( List<CalendarEventBasic> events)

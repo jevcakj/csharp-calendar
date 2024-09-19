@@ -215,16 +215,16 @@ namespace CalendarClient
 
         public virtual void Execute()
         {
-            ListEvents();
-        }
-        protected void ListEvents()
-        {
             string[] args = CommandString.Split(' ', StringSplitOptions.TrimEntries | StringSplitOptions.RemoveEmptyEntries);
             if (args.Length == 2)
             {
                 DateTime shownDate = DateTime.Parse(args[1]);
                 client.shownDate = shownDate;
             }
+            ListEvents();
+        }
+        protected void ListEvents()
+        {
             DateTime date = client.BeginningDate();
             int numberOfDays = client.NumberOfDays();
             if (numberOfDays > 0)
@@ -351,16 +351,25 @@ namespace CalendarClient
         {
             int index = int.Parse(CommandString.Split(' ', StringSplitOptions.TrimEntries | StringSplitOptions.RemoveEmptyEntries)[1]);
             CalendarEventBasic preview = client.GetListedEvent(index);
-            CalendarEvent calendarEvent;
-            if (!preview.IsValid() || !connection.GetEvent((DateTime)preview.beginning!, (int)preview.id!, out calendarEvent))
+            CalendarEvent oldCalendarEvent;
+            if (!preview.IsValid() || !connection.GetEvent((DateTime)preview.beginning!, (int)preview.id!, out oldCalendarEvent))
             {
                 ui.ShowMessage("Unable to get full event info. Try it again.");
                 return;
             }
-            calendarEvent = ui.EditEvent(calendarEvent);
-            if (!connection.SaveEvent(calendarEvent))
+            CalendarEvent newCalendarEvent = ui.EditEvent(oldCalendarEvent);
+            if(newCalendarEvent.beginning?.Date != oldCalendarEvent.beginning?.Date)
+            {
+                if(!connection.DeleteEvent((DateTime)oldCalendarEvent.beginning?.Date!, (int)oldCalendarEvent.id!))
+                {
+                    ui.ShowMessage("Saving event was not successfull. Try it again.");
+                    return;
+                }
+            }
+            if (!connection.SaveEvent(newCalendarEvent))
             {
                 ui.ShowMessage("Saving event was not successfull. Try it again.");
+                return;
             }
             ListEvents();
         }

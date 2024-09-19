@@ -89,13 +89,13 @@ namespace CalendarClient
                     viewSpan = ViewSpan.Week;
                     eventsListed = new();
                 }
-                if(command is ListEventsCommand list)
-                {
-                    eventsListed = list.GetEvents();
-                }
 
                 command.Execute();
 
+                if (command is ListEventsCommand list)
+                {
+                    eventsListed = list.GetEvents();
+                }
                 if (command is LoginUserCommand)
                 {
                     ((CommandLineInterface)ui).SetCommands(userCommands);
