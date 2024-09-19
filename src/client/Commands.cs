@@ -179,37 +179,6 @@ namespace CalendarClient
         }
     }
 
-    public class AddEventCommand : ICalendarCommand
-    {
-        private IUserInterface ui;
-        private IConnection connection;
-        public string CommandString { get; set; }
-        public AddEventCommand(IUserInterface ui, IConnection connection)
-        {
-            this.ui= ui;
-            this.connection= connection;
-            CommandString = "";
-        }
-        public bool CheckArguments() => CommandString.Split(' ', StringSplitOptions.TrimEntries | StringSplitOptions.RemoveEmptyEntries).Length == 1;
-
-        public ICalendarCommand Copy() => new AddEventCommand(ui, connection);
-
-        public string Help() => "add: Adds a new event to the calendar.";
-
-        public void Execute()
-        {
-            CalendarEvent calendarEvent = ui.AddEvent();
-            if(calendarEvent is null)
-            {
-                return;
-            }
-            if (!connection.SaveEvent(calendarEvent))
-            {
-                ui.ShowMessage("Adding event was not successfull. Try it again.");
-            }
-        }
-    }
-
     public class ListEventsCommand : ICalendarCommand
     {
         protected IUserInterface ui;
@@ -225,7 +194,7 @@ namespace CalendarClient
             CommandString = "";
             events = new List<CalendarEventBasic>();
         }
-        public bool CheckArguments()
+        public virtual bool CheckArguments()
         {
             string[] args = CommandString.Split(' ', StringSplitOptions.TrimEntries | StringSplitOptions.RemoveEmptyEntries);
             if (args.Length != 1 && args.Length != 2)
@@ -240,11 +209,15 @@ namespace CalendarClient
             return true;
         }
 
-        public ICalendarCommand Copy() => new ListEventsCommand(ui, connection, client);
+        public virtual ICalendarCommand Copy() => new ListEventsCommand(ui, connection, client);
 
-        public string Help() => "list: Lists the events in the user's calendar.";
+        public virtual string Help() => "list: Lists the events in the user's calendar.";
 
-        public void Execute()
+        public virtual void Execute()
+        {
+            ListEvents();
+        }
+        protected void ListEvents()
         {
             string[] args = CommandString.Split(' ', StringSplitOptions.TrimEntries | StringSplitOptions.RemoveEmptyEntries);
             if (args.Length == 2)
@@ -270,7 +243,7 @@ namespace CalendarClient
                 for (; events.Count <= 10; date = date.AddDays(1))
                 {
                     List<CalendarEventBasic> events;
-                    if(connection.GetEvents(date, out events))
+                    if (connection.GetEvents(date, out events))
                     {
                         this.events.AddRange(events);
                     }
@@ -285,19 +258,218 @@ namespace CalendarClient
         public List<CalendarEventBasic> GetEvents() => events;
     }
 
+    public class AddEventCommand : ListEventsCommand, ICalendarCommand
+    {
+        public AddEventCommand(IUserInterface ui, IConnection connection, Client client)
+            : base(ui, connection, client) {}
+        public override bool CheckArguments() => CommandString.Split(' ', StringSplitOptions.TrimEntries | StringSplitOptions.RemoveEmptyEntries).Length == 1;
+
+        public override ICalendarCommand Copy() => new AddEventCommand(ui, connection, client);
+
+        public override string Help() => "add: Adds a new event to the calendar.";
+
+        public override void Execute()
+        {
+            CalendarEvent calendarEvent = ui.AddEvent();
+            if(calendarEvent is null)
+            {
+                return;
+            }
+            if (!connection.SaveEvent(calendarEvent))
+            {
+                ui.ShowMessage("Adding event was not successfull. Try it again.");
+            }
+            ListEvents();
+        }
+    }
+
+    public class DeleteEventCommand : ListEventsCommand, ICalendarCommand
+    {
+        public DeleteEventCommand(IUserInterface ui, IConnection connection, Client client)
+            : base(ui, connection, client) {}
+        public override bool CheckArguments()
+        {
+            var args = CommandString.Split(' ', StringSplitOptions.TrimEntries | StringSplitOptions.RemoveEmptyEntries);
+            if (args.Length != 2)
+            {
+                return false;
+            }
+            int number;
+            if (!int.TryParse(args[1], out number))
+            {
+                return false;
+            }
+            return number >= 0 && number < client.ListLength();
+        }
+
+        public override ICalendarCommand Copy() => new DeleteEventCommand(ui, connection, client);
+
+        public override string Help() => "delete [id]: Deletes the event with the specified ID.";
+
+        public override void Execute()
+        {
+            int index = int.Parse(CommandString.Split(' ', StringSplitOptions.TrimEntries | StringSplitOptions.RemoveEmptyEntries)[1]);
+            CalendarEventBasic calendarEvent = client.GetListedEvent(index);
+            if (!calendarEvent.IsValid())
+            {
+                ui.ShowMessage("Unable to delete event.");
+                return;
+            }
+            if (!ui.DeleteEvent(calendarEvent))
+            {
+                return;
+            }
+            connection.DeleteEvent((DateTime)calendarEvent.beginning!, (int)calendarEvent.id!);
+            ListEvents();
+        }
+    }
+
+    public class EditEventCommand : ListEventsCommand, ICalendarCommand
+    {
+        public EditEventCommand(IUserInterface ui, IConnection connection, Client client)
+            : base(ui, connection, client) { }
+        public override bool CheckArguments()
+        {
+            var args = CommandString.Split(' ', StringSplitOptions.TrimEntries | StringSplitOptions.RemoveEmptyEntries);
+            if (args.Length != 2)
+            {
+                return false;
+            }
+            int number;
+            if (!int.TryParse(args[1], out number))
+            {
+                return false;
+            }
+            return number >= 0 && number < client.ListLength();
+        }
+
+        public override ICalendarCommand Copy() => new EditEventCommand(ui, connection, client);
+
+        public override string Help() => "edit [id]: Edits the event with the specified ID.";
+
+        public override void Execute()
+        {
+            int index = int.Parse(CommandString.Split(' ', StringSplitOptions.TrimEntries | StringSplitOptions.RemoveEmptyEntries)[1]);
+            CalendarEventBasic preview = client.GetListedEvent(index);
+            CalendarEvent calendarEvent;
+            if (!preview.IsValid() || !connection.GetEvent((DateTime)preview.beginning!, (int)preview.id!, out calendarEvent))
+            {
+                ui.ShowMessage("Unable to get full event info. Try it again.");
+                return;
+            }
+            calendarEvent = ui.EditEvent(calendarEvent);
+            if (!connection.SaveEvent(calendarEvent))
+            {
+                ui.ShowMessage("Saving event was not successfull. Try it again.");
+            }
+            ListEvents();
+        }
+    }
+
+    public class ShowEventCommand : ICalendarCommand
+    {
+        private IUserInterface ui;
+        private IConnection connection;
+        private Client client;
+        public string CommandString { get; set; }
+        public ShowEventCommand(IUserInterface ui, IConnection connection, Client client)
+        {
+            this.ui = ui;
+            this.connection = connection;
+            this.client = client;
+            CommandString = "";
+        }
+        public bool CheckArguments()
+        {
+            var args = CommandString.Split(' ', StringSplitOptions.TrimEntries | StringSplitOptions.RemoveEmptyEntries);
+            if (args.Length != 2)
+            {
+                return false;
+            }
+            int number;
+            if (!int.TryParse(args[1], out number))
+            {
+                return false;
+            }
+            return number >= 0 && number < client.ListLength();
+        }
+
+        public ICalendarCommand Copy() => new ShowEventCommand(ui, connection, client);
+
+        public string Help() => "show [id]: Displays the details of the event with the specified ID.";
+
+        public void Execute()
+        {
+            int index = int.Parse(CommandString.Split(' ', StringSplitOptions.TrimEntries | StringSplitOptions.RemoveEmptyEntries)[1]);
+            CalendarEventBasic preview = client.GetListedEvent(index);
+            CalendarEvent calendarEvent;
+            ;
+            if (!preview.IsValid() || !connection.GetEvent((DateTime)preview.beginning!, (int)preview.id!, out calendarEvent))
+            {
+                ui.ShowMessage("Unable to show full event info.");
+                return;
+            }
+            ui.ShowEvent(calendarEvent);
+        }
+    }
+
+    public class DuplicateEventCommand : ListEventsCommand, ICalendarCommand
+    {
+        public DuplicateEventCommand(IUserInterface ui, IConnection connection, Client client)
+            : base(ui, connection, client) { }
+
+        public override bool CheckArguments()
+        {
+            var args = CommandString.Split(' ', StringSplitOptions.TrimEntries | StringSplitOptions.RemoveEmptyEntries);
+            if (args.Length != 2)
+            {
+                return false;
+            }
+            int number;
+            if (!int.TryParse(args[1], out number))
+            {
+                return false;
+            }
+            return number >= 0 && number < client.ListLength();
+        }
+
+        public override ICalendarCommand Copy() => new DuplicateEventCommand(ui, connection, client);
+
+        public override string Help() => "duplicate [id]: Duplicates the event with the specified ID.";
+
+        public override void Execute()
+        {
+            int index = int.Parse(CommandString.Split(' ', StringSplitOptions.TrimEntries | StringSplitOptions.RemoveEmptyEntries)[1]);
+            CalendarEventBasic preview = client.GetListedEvent(index);
+            CalendarEvent calendarEvent;
+            if (!preview.IsValid() || !connection.GetEvent((DateTime)preview.beginning!, (int)preview.id!, out calendarEvent))
+            {
+                ui.ShowMessage("Unable to get full event info. Try it again.");
+                return;
+            }
+            calendarEvent = ui.EditEvent(calendarEvent);
+            calendarEvent.id = null;
+            if (!connection.SaveEvent(calendarEvent))
+            {
+                ui.ShowMessage("Saving event was not successfull. Try it again.");
+            }
+            ListEvents();
+        }
+    }
+
     public class NextCommand : ListEventsCommand, ICalendarCommand
     {
         public NextCommand(IUserInterface ui, IConnection connection, Client client) : base(ui, connection, client) { }
-        public new bool CheckArguments() => CommandString.Split(' ', StringSplitOptions.TrimEntries | StringSplitOptions.RemoveEmptyEntries).Length == 1;
+        public override bool CheckArguments() => CommandString.Split(' ', StringSplitOptions.TrimEntries | StringSplitOptions.RemoveEmptyEntries).Length == 1;
 
-        public new ICalendarCommand Copy() => new NextCommand(ui, connection, client);
+        public override ICalendarCommand Copy() => new NextCommand(ui, connection, client);
 
-        public new string Help() => "next: Shows the events for the next week/month.";
+        public override string Help() => "next: Shows the events for the next week/month.";
 
-        public new void Execute()
+        public override void Execute()
         {
             client.shownDate = client.shownDate.AddDays(7);
-            base.Execute();
+            ListEvents();
         }
     }
 
@@ -305,32 +477,32 @@ namespace CalendarClient
     {
 
         public PreviousCommand(IUserInterface ui, IConnection connection, Client client) : base(ui, connection, client) { }
-        public new bool CheckArguments() => CommandString.Split(' ', StringSplitOptions.TrimEntries | StringSplitOptions.RemoveEmptyEntries).Length == 1;
+        public override bool CheckArguments() => CommandString.Split(' ', StringSplitOptions.TrimEntries | StringSplitOptions.RemoveEmptyEntries).Length == 1;
 
-        public new ICalendarCommand Copy() => new PreviousCommand(ui, connection, client);
+        public override ICalendarCommand Copy() => new PreviousCommand(ui, connection, client);
 
-        public new string Help() => "previous: Shows the events for the previous week/month.";
+        public override string Help() => "previous: Shows the events for the previous week/month.";
 
-        public new void Execute()
+        public override void Execute()
         {
             client.shownDate = client.shownDate.AddDays(-7);
-            base.Execute();
+            ListEvents();
         }
     }
 
     public class CurrentCommand : ListEventsCommand, ICalendarCommand
     {
         public CurrentCommand(IUserInterface ui, IConnection connection, Client client) : base(ui, connection, client) { }
-        public new bool CheckArguments() => CommandString.Split(' ', StringSplitOptions.TrimEntries | StringSplitOptions.RemoveEmptyEntries).Length == 1;
+        public override bool CheckArguments() => CommandString.Split(' ', StringSplitOptions.TrimEntries | StringSplitOptions.RemoveEmptyEntries).Length == 1;
 
-        public new ICalendarCommand Copy() => new CurrentCommand(ui, connection, client);
+        public override ICalendarCommand Copy() => new CurrentCommand(ui, connection, client);
 
-        public new string Help() => "current: Shows the events for the current week/month.";
+        public override string Help() => "current: Shows the events for the current week/month.";
 
-        public new void Execute()
+        public override void Execute()
         {
             client.shownDate = DateTime.Now;
-            base.Execute();
+            ListEvents();
         }
     }
 
@@ -401,205 +573,6 @@ namespace CalendarClient
         public string Help() => "exit: Exits the application.";
 
         public void Execute() { }
-    }
-
-    public class DeleteEventCommand : ICalendarCommand
-    {
-        private IUserInterface ui;
-        private IConnection connection;
-        private Client client;
-        public string CommandString { get; set; }
-        public DeleteEventCommand(IUserInterface ui, IConnection connection, Client client)
-        {
-            this.ui = ui;
-            this.connection = connection;
-            this.client = client;
-            CommandString = "";
-        }
-        public bool CheckArguments()
-        {
-            var args = CommandString.Split(' ', StringSplitOptions.TrimEntries | StringSplitOptions.RemoveEmptyEntries);
-            if(args.Length != 2)
-            {
-                return false;
-            }
-            int number;
-            if(!int.TryParse(args[1], out number))
-            {
-                return false;
-            }
-            return number >= 0 && number < client.ListLength();
-        }
-
-        public ICalendarCommand Copy() => new DeleteEventCommand(ui, connection, client);
-
-        public string Help() => "delete [id]: Deletes the event with the specified ID.";
-
-        public void Execute()
-        {
-            int index = int.Parse(CommandString.Split(' ', StringSplitOptions.TrimEntries | StringSplitOptions.RemoveEmptyEntries)[1]);
-            CalendarEventBasic calendarEvent = client.GetListedEvent(index);
-            if (!calendarEvent.IsValid())
-            {
-                ui.ShowMessage("Unable to delete event.");
-                return;
-            }
-            if (!ui.DeleteEvent(calendarEvent))
-            {
-                return;
-            }
-            connection.DeleteEvent((DateTime)calendarEvent.beginning!, (int)calendarEvent.id!);
-        }
-    }
-
-    public class EditEventCommand : ICalendarCommand
-    {
-        private IUserInterface ui;
-        private IConnection connection;
-        private Client client;
-        public string CommandString { get; set; }
-        public EditEventCommand(IUserInterface ui, IConnection connection, Client client)
-        {
-            this.ui = ui;
-            this.connection = connection;
-            this.client = client;
-            CommandString = "";
-        }
-        public bool CheckArguments()
-        {
-            var args = CommandString.Split(' ', StringSplitOptions.TrimEntries | StringSplitOptions.RemoveEmptyEntries);
-            if (args.Length != 2)
-            {
-                return false;
-            }
-            int number;
-            if (!int.TryParse(args[1], out number))
-            {
-                return false;
-            }
-            return number >= 0 && number < client.ListLength();
-        }
-
-        public ICalendarCommand Copy() => new EditEventCommand(ui,connection, client);
-
-        public string Help() => "edit [id]: Edits the event with the specified ID.";
-
-        public void Execute()
-        {
-            int index = int.Parse(CommandString.Split(' ', StringSplitOptions.TrimEntries | StringSplitOptions.RemoveEmptyEntries)[1]);
-            CalendarEventBasic preview = client.GetListedEvent(index);
-            CalendarEvent calendarEvent;
-            if (!preview.IsValid() || !connection.GetEvent((DateTime)preview.beginning!, (int)preview.id!, out calendarEvent))
-            {
-                ui.ShowMessage("Unable to get full event info. Try it again.");
-                return;
-            }
-            calendarEvent = ui.EditEvent(calendarEvent);
-            if (!connection.SaveEvent(calendarEvent))
-            {
-                ui.ShowMessage("Saving event was not successfull. Try it again.");
-            }
-        }
-    }
-
-    public class ShowEventCommand : ICalendarCommand
-    {
-        private IUserInterface ui;
-        private IConnection connection;
-        private Client client;
-        public string CommandString { get; set; }
-        public ShowEventCommand(IUserInterface ui, IConnection connection, Client client)
-        {
-            this.ui = ui;
-            this.connection = connection;
-            this.client = client;
-            CommandString = "";
-        }
-        public bool CheckArguments()
-        {
-            var args = CommandString.Split(' ', StringSplitOptions.TrimEntries | StringSplitOptions.RemoveEmptyEntries);
-            if (args.Length != 2)
-            {
-                return false;
-            }
-            int number;
-            if (!int.TryParse(args[1], out number))
-            {
-                return false;
-            }
-            return number >= 0 && number < client.ListLength();
-        }
-
-        public ICalendarCommand Copy() => new ShowEventCommand(ui, connection, client);
-
-        public string Help() => "show [id]: Displays the details of the event with the specified ID.";
-
-        public void Execute()
-        {
-            int index = int.Parse(CommandString.Split(' ', StringSplitOptions.TrimEntries | StringSplitOptions.RemoveEmptyEntries)[1]);
-            CalendarEventBasic preview = client.GetListedEvent(index);
-            CalendarEvent calendarEvent;
-            ;
-            if (!preview.IsValid() || !connection.GetEvent((DateTime)preview.beginning!, (int)preview.id!, out calendarEvent))
-            {
-                ui.ShowMessage("Unable to show full event info.");
-                return;
-            }
-            ui.ShowEvent(calendarEvent);
-        }
-    }
-
-    public class DuplicateEventCommand : ICalendarCommand
-    {
-        private IUserInterface ui;
-        private IConnection connection;
-        private Client client;
-        public string CommandString { get;  set; }
-
-        public DuplicateEventCommand(IUserInterface ui, IConnection connection, Client client)
-        {
-            this.ui = ui;
-            this.connection = connection;
-            this.client = client;
-            CommandString = "";
-        }
-
-        public bool CheckArguments()
-        {
-            var args = CommandString.Split(' ', StringSplitOptions.TrimEntries | StringSplitOptions.RemoveEmptyEntries);
-            if (args.Length != 2)
-            {
-                return false;
-            }
-            int number;
-            if (!int.TryParse(args[1], out number))
-            {
-                return false;
-            }
-            return number >= 0 && number < client.ListLength();
-        }
-
-        public ICalendarCommand Copy() => new DuplicateEventCommand(ui, connection, client);
-
-        public string Help() => "duplicate [id]: Duplicates the event with the specified ID.";
-
-        public void Execute()
-        {
-            int index = int.Parse(CommandString.Split(' ', StringSplitOptions.TrimEntries | StringSplitOptions.RemoveEmptyEntries)[1]);
-            CalendarEventBasic preview = client.GetListedEvent(index);
-            CalendarEvent calendarEvent;
-            if (!preview.IsValid() || !connection.GetEvent((DateTime)preview.beginning!, (int)preview.id!, out calendarEvent))
-            {
-                ui.ShowMessage("Unable to get full event info. Try it again.");
-                return;
-            }
-            calendarEvent = ui.EditEvent(calendarEvent);
-            calendarEvent.id = null;
-            if (!connection.SaveEvent(calendarEvent))
-            {
-                ui.ShowMessage("Saving event was not successfull. Try it again.");
-            }
-        }
     }
 
     public class HelpCommand : ICalendarCommand

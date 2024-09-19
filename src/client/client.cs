@@ -55,7 +55,7 @@ namespace CalendarClient
                 { "logout", new LogoutUserCommand(ui, connection) },
                 { "changeName", new ChangeUserNameCommand(ui, connection, this) },
                 { "changePassword", new ChangeUserPasswordCommand(ui, connection, this) },
-                { "add", new AddEventCommand(ui, connection) },
+                { "add", new AddEventCommand(ui, connection, this) },
                 { "edit", new EditEventCommand(ui, connection, this) },
                 { "duplicate", new DuplicateEventCommand(ui, connection, this) },
                 { "delete", new DeleteEventCommand(ui, connection, this) },
