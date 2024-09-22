@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Reflection.Metadata.Ecma335;
+using System.Runtime.CompilerServices;
 using System.Text;
 using System.Threading.Tasks;
 
@@ -225,8 +226,16 @@ namespace CalendarClient
         }
         protected void ListEvents()
         {
+            HttpConnection.Events<CalendarEventBasic> a = ((HttpConnection)connection).Basics();
+            
             DateTime date = client.BeginningDate();
             int numberOfDays = client.NumberOfDays();
+
+            var b = from p in a where p.beginning >= date where p.beginning <= date.AddDays(numberOfDays) select p;
+            foreach(var ev in b)
+            {
+                Console.WriteLine(ev.beginning?.ToShortDateString());
+            }
             if (numberOfDays > 0)
             {
                 for (int i = 0; i < numberOfDays; i++)
