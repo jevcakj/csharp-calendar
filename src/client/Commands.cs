@@ -1,4 +1,4 @@
-﻿using CalendarCommon;
+﻿ using CalendarCommon;
 
 namespace CalendarClient
 {
@@ -249,7 +249,7 @@ namespace CalendarClient
         /// </summary>
         protected void ListEvents()
         {
-            IEventList<CalendarEventBasic> events = connection.GetEvents();
+            IEvents<CalendarEventBasic> events = connection.GetEvents();
             
             DateTime beginning = client.BeginningDate();
             int numberOfDays = client.NumberOfDays();

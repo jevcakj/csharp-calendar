@@ -62,7 +62,7 @@ namespace CalendarClient
         /// Retrieves all calendar events for the current user.
         /// </summary>
         /// <returns>Returns an IEventList which can retrieve the basic details of calendar events.</returns>
-        public IEventList<CalendarEventBasic> GetEvents();
+        public IEvents<CalendarEventBasic> GetEvents();
 
         /// <summary>
         /// Deletes a specific calendar event based on date and ID.
@@ -74,12 +74,12 @@ namespace CalendarClient
     }
 
     /// <summary>
-    /// Interface for managing a list of calendar events.
+    /// Interface for managing calendar events.
     /// Extends IEnumerable to allow iteration over the event list and provides filtering functionality with LINQ syntax.
     /// </summary>
     /// <typeparam name="T">The type of events in the list, which must be derived from CalendarEventBasic.</typeparam>
 
-    public interface IEventList<T> : IEnumerable<T> where T : CalendarEventBasic
+    public interface IEvents<T> : IEnumerable<T> where T : CalendarEventBasic
     {
 
         /// <summary>
@@ -87,8 +87,8 @@ namespace CalendarClient
         /// Supports only comparing date of the event beginning.
         /// </summary>
         /// <param name="expression">The predicate expression used to filter the events.</param>
-        /// <returns>Returns a filtered IEventList containing events that match the predicate.</returns>
+        /// <returns>Returns a filtered IEventS containing events that match the predicate.</returns>
 
-        public IEventList<T> Where(Expression<Predicate<T>> expression);
+        public IEvents<T> Where(Expression<Predicate<T>> expression);
     }
 }
