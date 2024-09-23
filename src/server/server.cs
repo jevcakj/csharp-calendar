@@ -1,23 +1,27 @@
-﻿using Microsoft.Win32;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Net;
-using System.Security.Cryptography;
+﻿using System.Net;
 using System.Text;
 using System.Text.Json;
-using System.Threading.Tasks;
 
 using CalendarCommon;
 
-
 namespace CalendarServer
 {
+
+    /// <summary>
+    /// Class representing a server that handles HTTP requests related to users and calendar events.
+    /// Uses an HttpListener to listen for incoming requests and processes them based on the HTTP method and URL.
+    /// </summary>
     public class Server
     {
         private HttpListener listener;
         private IData data;
 
+        /// <summary>
+        /// Constructor that initializes the server with optional data storage and a specific port.
+        /// Defaults to using FileDataStorage if no data storage is provided.
+        /// </summary>
+        /// <param name="data">Optional IData storage implementation. Defaults to FileDataStorage.</param>
+        /// <param name="port">The port on which the server will listen. Defaults to 8080.</param>
         public Server(IData? data = null, int port = 8080)
         {
             this.data = data ?? new FileDataStorage();
@@ -25,6 +29,12 @@ namespace CalendarServer
             listener.Prefixes.Add($"http://localhost:{port}/");
             listener.AuthenticationSchemes = AuthenticationSchemes.Basic;
         }
+
+        /// <summary>
+        /// Constructor that initializes the server with a specific file path for data storage and a port.
+        /// </summary>
+        /// <param name="path">The path to the file data storage.</param>
+        /// <param name="port">The port on which the server will listen. Defaults to 8080.</param>
         public Server(string path, int port = 8080)
         {
             data = new FileDataStorage(path);
@@ -33,6 +43,9 @@ namespace CalendarServer
             listener.AuthenticationSchemes = AuthenticationSchemes.Basic;
         }
 
+        /// <summary>
+        /// Starts the server loop, continuously listens for incoming requests, and handles them asynchronously.
+        /// </summary>
         public void StartLoop() 
         {
             listener.Start();
@@ -50,6 +63,11 @@ namespace CalendarServer
             }
         }
 
+        /// <summary>
+        /// Handles incoming HTTP requests based on the request method and URL.
+        /// Processes requests for user registration, authentication, event handling, and credential changes.
+        /// </summary>
+        /// <param name="ctx">The HttpListenerContext containing the request and response.</param>
         private void HandleRequest(HttpListenerContext ctx)
         {
             var rq = ctx.Request;
@@ -128,6 +146,11 @@ namespace CalendarServer
             }
         }
 
+        /// <summary>
+        /// Handles retrieving calendar events or a specific event for a user.
+        /// </summary>
+        /// <param name="ctx">The HttpListenerContext containing the request and response.</param>
+        /// <param name="user">The user for whom the events are being retrieved.</param>
         public void GetEvent(HttpListenerContext ctx, User user)
         {
             var rq = ctx.Request;
@@ -161,6 +184,12 @@ namespace CalendarServer
             rsp.StatusCode = (int)HttpStatusCode.OK;
         }
 
+        /// <summary>
+        /// Handles saving a calendar event for a user.
+        /// </summary>
+        /// <param name="ctx">The HttpListenerContext containing the request and response.</param>
+        /// <param name="user">The user for whom the event is being saved.</param>
+
         public void SaveEvent(HttpListenerContext ctx, User user)
         {
             var rq = ctx.Request;
@@ -171,6 +200,11 @@ namespace CalendarServer
             WriteContent(rsp, id);
         }
 
+        /// <summary>
+        /// Handles deleting a calendar event for a user.
+        /// </summary>
+        /// <param name="ctx">The HttpListenerContext containing the request and response.</param>
+        /// <param name="user">The user for whom the event is being deleted.</param>
         public void DeleteEvent(HttpListenerContext ctx, User user)
         {
             var rq = ctx.Request;
@@ -182,6 +216,10 @@ namespace CalendarServer
             data.DeleteEvent(dateTime, id, user);
         }
 
+        /// <summary>
+        /// Handles user registration by creating a new user.
+        /// </summary>
+        /// <param name="ctx">The HttpListenerContext containing the request and response.</param>
         public void RegisterUser(HttpListenerContext ctx)
         {
             var rq = ctx.Request;
@@ -195,6 +233,11 @@ namespace CalendarServer
             }
         }
 
+        /// <summary>
+        /// Handles changing a user's credentials (username or password).
+        /// </summary>
+        /// <param name="ctx">The HttpListenerContext containing the request and response.</param>
+        /// <param name="user">The user whose credentials are being changed.</param>
         public void ChangeUserCredentials(HttpListenerContext ctx, User user)
         {
             var rq = ctx.Request;
@@ -227,6 +270,11 @@ namespace CalendarServer
             rsp.StatusCode = (int)HttpStatusCode.OK;
         }
 
+        /// <summary>
+        /// Writes string content to the response.
+        /// </summary>
+        /// <param name="rsp">The HttpListenerResponse object to write to.</param>
+        /// <param name="content">The string content to write.</param>
         private void WriteContent(HttpListenerResponse rsp, string content)
         {
             var buffer = Encoding.UTF8.GetBytes(content);
@@ -234,6 +282,11 @@ namespace CalendarServer
             rsp.OutputStream.Close();
         }
 
+        /// <summary>
+        /// Writes integer content to the response by converting it to a string.
+        /// </summary>
+        /// <param name="rsp">The HttpListenerResponse object to write to.</param>
+        /// <param name="content">The integer content to write.</param>
         private void WriteContent(HttpListenerResponse rsp, int content) => WriteContent(rsp, $"{content}");
     }
 }
