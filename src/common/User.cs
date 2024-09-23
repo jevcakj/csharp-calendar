@@ -1,11 +1,9 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-
-namespace CalendarCommon
+﻿namespace CalendarCommon
 {
+    /// <summary>
+    /// Class representing a user in the calendar system.
+    /// This class stores user-related information such as ID, name, and password.
+    /// </summary>
     public class User
     {
         public int? id {  get; set; }
@@ -13,12 +11,5 @@ namespace CalendarCommon
         public string? password { get; set; }
 
         public User() { }
-
-        public User(int id, string name, string password)
-        {
-            this.id = id;
-            this.name = name;
-            this.password = password;
-        }
     }
 }
