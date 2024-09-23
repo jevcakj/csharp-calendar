@@ -1,25 +1,30 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Reflection.Metadata.Ecma335;
-using System.Runtime.CompilerServices;
-using System.Text;
-using System.Threading.Tasks;
-
-using CalendarCommon;
+﻿using CalendarCommon;
 
 namespace CalendarClient
 {
+    /// <summary>
+    /// Interface for calendar commands, defining common methods for execution, argument validation, copying, and help.
+    /// </summary>
     public interface ICalendarCommand
     {
         public string CommandString { get; set; }
 
+        // Method to execute the command.
         void Execute();
+
+        // Method to check validity of command arguments.
         bool CheckArguments();
+
+        // Method to create a copy of the command instance.
         ICalendarCommand Copy();
+
+        // Method to retrieve help text for the command.
         string Help();
     }
 
+    /// <summary>
+    /// Command to create new user in the calendar system.
+    /// </summary>
     public class CreateUserCommand : ICalendarCommand
     {
         private IUserInterface ui;
@@ -50,6 +55,9 @@ namespace CalendarClient
         public string Help() => "createUser: Creates a new user in the calendar system.";
     }
 
+    /// <summary>
+    /// Command to change name of the current user.
+    /// </summary>
     public class ChangeUserNameCommand : ICalendarCommand
     {
         private IUserInterface ui;
@@ -85,6 +93,9 @@ namespace CalendarClient
         }
     }
 
+    /// <summary>
+    /// Command to change password of the current user.
+    /// </summary>
     public class ChangeUserPasswordCommand : ICalendarCommand
     {
         private IUserInterface ui;
@@ -119,6 +130,9 @@ namespace CalendarClient
         }
     }
 
+    /// <summary>
+    /// Command to log the user into the calendar system.
+    /// </summary>
     public class LoginUserCommand : ICalendarCommand
     {
         private IUserInterface ui;
@@ -156,6 +170,9 @@ namespace CalendarClient
         }
     }
 
+    /// <summary>
+    /// Command to log the user out of the calendar system.
+    /// </summary>
     public class LogoutUserCommand : ICalendarCommand
     {
         private IUserInterface ui;
@@ -180,6 +197,9 @@ namespace CalendarClient
         }
     }
 
+    /// <summary>
+    /// Command to list events with their basic information.
+    /// </summary>
     public class ListEventsCommand : ICalendarCommand
     {
         protected IUserInterface ui;
@@ -224,6 +244,9 @@ namespace CalendarClient
             }
             ListEvents();
         }
+        /// <summary>
+        /// Listing events in separate method to reusablility in derived classes.
+        /// </summary>
         protected void ListEvents()
         {
             IEventList<CalendarEventBasic> events = connection.GetEvents();
@@ -255,6 +278,10 @@ namespace CalendarClient
         public List<CalendarEventBasic> GetEvents() => events;
     }
 
+    /// <summary>
+    /// Command to add new event to the calendar.
+    /// After saving new event, command lists events to show updated calendar.
+    /// </summary>
     public class AddEventCommand : ListEventsCommand, ICalendarCommand
     {
         public AddEventCommand(IUserInterface ui, IConnection connection, Client client)
@@ -280,6 +307,10 @@ namespace CalendarClient
         }
     }
 
+    /// <summary>
+    /// Command to delete event from the calendar
+    /// After deleting event, command lists events to show updated calendar.
+    /// </summary>
     public class DeleteEventCommand : ListEventsCommand, ICalendarCommand
     {
         public DeleteEventCommand(IUserInterface ui, IConnection connection, Client client)
@@ -321,6 +352,10 @@ namespace CalendarClient
         }
     }
 
+    /// <summary>
+    /// Command to edit existing event.
+    /// After saving edited event, command lists events to show updated calendar.
+    /// </summary>
     public class EditEventCommand : ListEventsCommand, ICalendarCommand
     {
         public EditEventCommand(IUserInterface ui, IConnection connection, Client client)
@@ -355,6 +390,8 @@ namespace CalendarClient
                 return;
             }
             CalendarEvent newCalendarEvent = ui.EditEvent(oldCalendarEvent);
+
+            // If the beginning date has changed, deletes origninal event
             if(newCalendarEvent.beginning?.Date != oldCalendarEvent.beginning?.Date)
             {
                 if(!connection.DeleteEvent((DateTime)oldCalendarEvent.beginning?.Date!, (int)oldCalendarEvent.id!))
@@ -372,6 +409,9 @@ namespace CalendarClient
         }
     }
 
+    /// <summary>
+    /// Command to show detail information about specific event.
+    /// </summary>
     public class ShowEventCommand : ICalendarCommand
     {
         private IUserInterface ui;
@@ -409,7 +449,7 @@ namespace CalendarClient
             int index = int.Parse(CommandString.Split(' ', StringSplitOptions.TrimEntries | StringSplitOptions.RemoveEmptyEntries)[1]);
             CalendarEventBasic preview = client.GetListedEvent(index);
             CalendarEvent calendarEvent;
-            ;
+            
             if (!preview.IsValid() || !connection.GetEvent((DateTime)preview.beginning!, (int)preview.id!, out calendarEvent))
             {
                 ui.ShowMessage("Unable to show full event info.");
@@ -419,6 +459,10 @@ namespace CalendarClient
         }
     }
 
+    /// <summary>
+    /// Command to duplicate specific event.
+    /// After saving duplicated event, command lists events to show updated calendar.
+    /// </summary>
     public class DuplicateEventCommand : ListEventsCommand, ICalendarCommand
     {
         public DuplicateEventCommand(IUserInterface ui, IConnection connection, Client client)
@@ -463,6 +507,9 @@ namespace CalendarClient
         }
     }
 
+    /// <summary>
+    /// Command to list events for the next week or month, based on chosen time span.
+    /// </summary>
     public class NextCommand : ListEventsCommand, ICalendarCommand
     {
         public NextCommand(IUserInterface ui, IConnection connection, Client client) : base(ui, connection, client) { }
@@ -479,9 +526,11 @@ namespace CalendarClient
         }
     }
 
+    /// <summary>
+    /// Command to list events for the previous week or month, based on chosen time span.
+    /// </summary>
     public class PreviousCommand : ListEventsCommand, ICalendarCommand
     {
-
         public PreviousCommand(IUserInterface ui, IConnection connection, Client client) : base(ui, connection, client) { }
         public override bool CheckArguments() => CommandString.Split(' ', StringSplitOptions.TrimEntries | StringSplitOptions.RemoveEmptyEntries).Length == 1;
 
@@ -496,9 +545,13 @@ namespace CalendarClient
         }
     }
 
+    /// <summary>
+    /// Command to list events for the current week or month, based on chosen time span.
+    /// </summary>
     public class CurrentCommand : ListEventsCommand, ICalendarCommand
     {
-        public CurrentCommand(IUserInterface ui, IConnection connection, Client client) : base(ui, connection, client) { }
+        public CurrentCommand(IUserInterface ui, IConnection connection, Client client)
+            : base(ui, connection, client) { }
         public override bool CheckArguments() => CommandString.Split(' ', StringSplitOptions.TrimEntries | StringSplitOptions.RemoveEmptyEntries).Length == 1;
 
         public override ICalendarCommand Copy() => new CurrentCommand(ui, connection, client);
@@ -512,6 +565,9 @@ namespace CalendarClient
         }
     }
 
+    /// <summary>
+    /// Command to change time span (week, month or upcomming) for which events are listed.
+    /// </summary>
     public class ViewCommand : ICalendarCommand
     {
         private IUserInterface ui;
@@ -563,6 +619,9 @@ namespace CalendarClient
         }
     }
 
+    /// <summary>
+    /// Command to exit the aplication.
+    /// </summary>
     public class ExitCommand : ICalendarCommand
     {
         public string CommandString { get; set; }
@@ -581,6 +640,9 @@ namespace CalendarClient
         public void Execute() { }
     }
 
+    /// <summary>
+    /// Command to show help information for all available commands.
+    /// </summary>
     public class HelpCommand : ICalendarCommand
     {
         private IUserInterface ui;

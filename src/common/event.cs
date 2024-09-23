@@ -1,9 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-
+﻿
 namespace CalendarCommon
 {
     /// <summary>
@@ -18,6 +13,10 @@ namespace CalendarCommon
 
         public CalendarEventBasic() { }
 
+        /// <summary>
+        /// Checks if any of the basic event properties is null.
+        /// </summary>
+        /// <returns>Returns True if all properties are valid, False if any of them is null.</returns>
         public bool IsValid() => id != null && name != null && beginning != null && end != null;
 
         /// <summary>
