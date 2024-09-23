@@ -1,14 +1,12 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Data;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-using System.Xml.Linq;
+﻿using System.Text;
 using CalendarCommon;
 
 namespace CalendarClient
 {
+    /// <summary>
+    /// Class that implements the IUserInterface interface to interact with the user via the command line.
+    /// This class handles user input, command execution, event management, and provides a text-based user interface.
+    /// </summary>
     public class CommandLineInterface : IUserInterface
     {
         private Dictionary<string, ICalendarCommand> commands;
@@ -23,6 +21,11 @@ namespace CalendarClient
             UserName = string.Empty;
         }
 
+        /// <summary>
+        /// Waits for user input from the command line, processes the input, and returns the corresponding command.
+        /// Provides tab completion, history navigation, and error handling for invalid commands.
+        /// </summary>
+        /// <returns>Returns an ICalendarCommand object representing the user's command input.</returns>
         public ICalendarCommand GetInput()
         {
             StringBuilder sb = new StringBuilder();
@@ -91,6 +94,10 @@ namespace CalendarClient
             }
         }
 
+        /// <summary>
+        /// Prompts the user to create a new user by entering their name and password.
+        /// </summary>
+        /// <returns>Returns a User object with the user's details.</returns>
         public User CreateUser()
         {
             string name = GetValidStringProperty("Name");
@@ -99,17 +106,29 @@ namespace CalendarClient
             return user;
         }
 
+        /// <summary>
+        /// Prompts the user to change their username.
+        /// </summary>
+        /// <returns>Returns a User object with the new username.</returns>
         public User ChangeUserName()
         { 
             string name = GetValidStringProperty("New name:");
             return new User() { name = name };
         }
 
+        /// <summary>
+        /// Prompts the user to change their password.
+        /// </summary>
+        /// <returns>Returns a User object with the new password.</returns>
         public User ChangeUserPassword()
         {
             return GetValidPassword();
         }
 
+        /// <summary>
+        /// Prompts the user to log in by entering their username and password.
+        /// </summary>
+        /// <returns>Returns a User object with the entered credentials.</returns>
         public User LoginUser()
         {
             Console.WriteLine("Name:");
@@ -121,12 +140,19 @@ namespace CalendarClient
             return new User() { name = name, password = password };
         }
 
+        /// <summary>
+        /// Logs the user out, clears the username, and clears the command history.
+        /// </summary>
         public void LogoutUser()
         {
             UserName = string.Empty;
             commandHistory.Clear();
         }
 
+        /// <summary>
+        /// Prompts the user to create a new calendar event by entering the necessary details.
+        /// </summary>
+        /// <returns>Returns a CalendarEvent object with the entered event details.</returns>
         public CalendarEvent AddEvent()
         {
             CalendarEvent calendarEvent = new CalendarEvent();
@@ -147,6 +173,11 @@ namespace CalendarClient
             return calendarEvent;
         }
 
+        /// <summary>
+        /// Prompts the user to confirm deletion of a calendar event.
+        /// </summary>
+        /// <param name="calendarEvent">The event to be deleted.</param>
+        /// <returns>Returns true if the user confirms deletion; otherwise, false.</returns>
         public bool DeleteEvent(CalendarEventBasic calendarEvent)
         {
             Console.WriteLine($"{calendarEvent.beginning?.ToShortDateString()}, {calendarEvent.beginning?.ToShortTimeString()}, {calendarEvent.name}");
@@ -158,6 +189,11 @@ namespace CalendarClient
             return false;
         }
 
+        /// <summary>
+        /// Prompts the user to edit an existing calendar event by entering new or updated details.
+        /// </summary>
+        /// <param name="oldCalendarEvent">The existing calendar event to be edited.</param>
+        /// <returns>Returns the updated CalendarEvent object.</returns>
         public CalendarEvent EditEvent(CalendarEvent oldCalendarEvent)
         {
             CalendarEvent newCalendarEvent = new CalendarEvent();
@@ -183,6 +219,10 @@ namespace CalendarClient
             return newCalendarEvent;
         }
 
+        /// <summary>
+        /// Displays a list of calendar events to the user.
+        /// </summary>
+        /// <param name="events">The list of events to display.</param>
         public void ListEvents( List<CalendarEventBasic> events)
         {
             if(events is null ||  events.Count == 0)
@@ -197,6 +237,9 @@ namespace CalendarClient
             }
         }
 
+        /// <summary>
+        /// Displays help information about available commands.
+        /// </summary>
         public void Help()
         {
             foreach(var command in commands.Values)
@@ -205,6 +248,10 @@ namespace CalendarClient
             }
         }
 
+        /// <summary>
+        /// Displays the details of a specific calendar event.
+        /// </summary>
+        /// <param name="calendarEvent">The event to display.</param>
         public void ShowEvent(CalendarEvent calendarEvent)
         {
             Console.WriteLine($"Beginning:       {calendarEvent.beginning?.ToShortDateString()}, {calendarEvent.beginning?.ToShortTimeString()}");
@@ -214,16 +261,27 @@ namespace CalendarClient
             Console.WriteLine($"Description:\n   {calendarEvent.eventDescription}");
         }
 
+        /// <summary>
+        /// Displays a message to the user.
+        /// </summary>
+        /// <param name="message">The message to display.</param>
         public void ShowMessage(string message)
         {
             Console.WriteLine(message);
         }
 
+        /// <summary>
+        /// Sets the available commands for the user interface.
+        /// </summary>
+        /// <param name="commands">A dictionary of command names and corresponding command objects.</param>
         public void SetCommands(Dictionary<string, ICalendarCommand> commands)
         {
             this.commands = commands;
         }
 
+        /// <summary>
+        /// Clears the current console line.
+        /// </summary>
         private void ClearLine()
         {
             var a = Console.GetCursorPosition();
@@ -235,6 +293,10 @@ namespace CalendarClient
             Console.SetCursorPosition(0, a.Top);
         }
 
+        /// <summary>
+        /// Deletes the last character from the input.
+        /// </summary>
+        /// <param name="sb">The StringBuilder containing the current input.</param>
         private void DeleteLastChar(StringBuilder sb)
         {
             if (sb.Length > 0)
@@ -244,6 +306,11 @@ namespace CalendarClient
             }
         }
 
+        /// <summary>
+        /// Prompts the user to enter a valid string property (such as a name).
+        /// </summary>
+        /// <param name="propertyName">The name of the property being requested.</param>
+        /// <returns>Returns the valid string entered by the user.</returns>
         private string GetValidStringProperty(string propertyName)
         {
             while (true)
@@ -264,6 +331,10 @@ namespace CalendarClient
             }
         }
 
+        /// <summary>
+        /// Prompts the user to enter and confirm a valid password.
+        /// </summary>
+        /// <returns>Returns a User object with the entered password.</returns>
         private User GetValidPassword()
         {
             while (true)
@@ -290,6 +361,11 @@ namespace CalendarClient
             }
         }
 
+        /// <summary>
+        /// Reads the user's password input, hiding the actual characters.
+        /// </summary>
+        /// <param name="password">The output string for the password entered.</param>
+        /// <returns>Returns true if the password is successfully entered; otherwise, false.</returns>
         private bool ReadPassword(out string password)
         {
             StringBuilder sb = new StringBuilder();
@@ -320,11 +396,19 @@ namespace CalendarClient
             }
         }
 
+        /// <summary>
+        /// Writes the command prompt with the current username.
+        /// </summary>
         private void WritePrompt()
         {
             Console.Write(UserName is null ? "Calendar@ " : $"Calendar@{UserName} ");
         }
 
+        /// <summary>
+        /// Reads a string input from the user with an example value displayed.
+        /// </summary>
+        /// <param name="example">The example value to display to the user.</param>
+        /// <returns>Returns the string entered by the user or the example if no input is provided.</returns>
         private string ReadStringWithExample(string example)
         {
             var cursorePos = Console.GetCursorPosition();
@@ -367,6 +451,13 @@ namespace CalendarClient
             }
         }
 
+        /// <summary>
+        /// Prompts the user to enter a valid end date for a calendar event.
+        /// Ensures the end date is later than the beginning date.
+        /// </summary>
+        /// <param name="beginning">The beginning date of the event.</param>
+        /// <param name="example">An example end date to display.</param>
+        /// <returns>Returns the valid end date entered by the user.</returns>
         private DateTime GetValidEndDate(DateTime beginning, DateTime example)
         {
             while (true)
@@ -387,6 +478,11 @@ namespace CalendarClient
             }
         }
 
+        /// <summary>
+        /// Prompts the user to enter a valid date and time, using an example as a default value.
+        /// </summary>
+        /// <param name="example">The example date and time to display.</param>
+        /// <returns>Returns the valid DateTime entered by the user.</returns>
         private DateTime ReadDateTime(DateTime example)
         {
             DateTime date;
@@ -409,6 +505,13 @@ namespace CalendarClient
             }
         }
 
+        /// <summary>
+        /// Tries to parse a date and time from a string input.
+        /// </summary>
+        /// <param name="input">The string input to parse.</param>
+        /// <param name="example">An example DateTime value to use as a default.</param>
+        /// <param name="result">The parsed DateTime output.</param>
+        /// <returns>Returns true if the parsing is successful; otherwise, false.</returns>
         private bool TryParseDateTime(string input, DateTime example,  out DateTime result)
         {
             var splitted = input.Split(' ', StringSplitOptions.RemoveEmptyEntries | StringSplitOptions.TrimEntries);
@@ -452,6 +555,10 @@ namespace CalendarClient
             }
         }
 
+        /// <summary>
+        /// Moves down in the command history and retrieves the next command.
+        /// </summary>
+        /// <param name="sb">The StringBuilder to store the retrieved command.</param>
         private void MoveHistoryDown(StringBuilder sb)
         {
             if (commandHistoryIndexer > 1)
@@ -468,6 +575,10 @@ namespace CalendarClient
             }
         }
 
+        /// <summary>
+        /// Moves up in the command history and retrieves the previous command.
+        /// </summary>
+        /// <param name="sb">The StringBuilder to store the retrieved command.</param>
         private void MoveHistoryUp(StringBuilder sb)
         {
             if (commandHistoryIndexer < commandHistory.Count)
@@ -477,6 +588,10 @@ namespace CalendarClient
             }
         }
 
+        /// <summary>
+        /// Retrieves a command from the command history and displays it in the input prompt.
+        /// </summary>
+        /// <param name="sb">The StringBuilder to store the retrieved command.</param>
         private void GetCommandFromHistory(StringBuilder sb)
         {
             ICalendarCommand command = commandHistory[commandHistory.Count - commandHistoryIndexer];
@@ -487,6 +602,10 @@ namespace CalendarClient
             Console.Write(sb.ToString());
         }
 
+        /// <summary>
+        /// Provides tab completion for partially typed commands by finding matching commands.
+        /// </summary>
+        /// <param name="sb">The StringBuilder containing the user's current input.</param>
         private void TabCompletion(StringBuilder sb)
         {
             string prefix = sb.ToString();
@@ -526,6 +645,12 @@ namespace CalendarClient
                 Console.Write(sb.ToString());
             }
         }
+
+        /// <summary>
+        /// Finds the longest common prefix of a list of strings.
+        /// </summary>
+        /// <param name="commands">The list of command strings to compare.</param>
+        /// <returns>Returns the longest common prefix of the provided commands.</returns>
         private string LongestCommonPrefix(List<string> commands)
         {
             commands.Sort();
