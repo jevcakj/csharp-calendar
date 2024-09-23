@@ -226,43 +226,31 @@ namespace CalendarClient
         }
         protected void ListEvents()
         {
-            HttpConnection.Events<CalendarEventBasic> a = ((HttpConnection)connection).Basics();
+            IEventList<CalendarEventBasic> events = connection.GetEvents();
             
-            DateTime date = client.BeginningDate();
+            DateTime beginning = client.BeginningDate();
             int numberOfDays = client.NumberOfDays();
 
-            var b = from p in a where p.beginning >= date where p.beginning <= date.AddDays(numberOfDays) select p;
-            foreach(var ev in b)
-            {
-                Console.WriteLine(ev.beginning?.ToShortDateString());
-            }
             if (numberOfDays > 0)
             {
-                for (int i = 0; i < numberOfDays; i++)
+                DateTime end = beginning.AddDays(numberOfDays);
+                var filteredEvents = from calendarEvent in events where calendarEvent.beginning >= beginning where calendarEvent.beginning < end select calendarEvent;
+
+                foreach(var calEvent in filteredEvents)
                 {
-                    List<CalendarEventBasic> events;
-                    if (connection.GetEvents(date.AddDays(i), out events))
-                    {
-                        this.events.AddRange(events);
-                    }
+                    this.events.Add(calEvent);
                 }
             }
             else
             {
-                for (; events.Count <= 10; date = date.AddDays(1))
+                var filteredEvents = from calendarEvent in events where calendarEvent.beginning >= beginning select calendarEvent;
+                var iterator = filteredEvents.GetEnumerator();
+                for(int i = 0; i < 10 && iterator.MoveNext();i++)
                 {
-                    List<CalendarEventBasic> events;
-                    if (connection.GetEvents(date, out events))
-                    {
-                        this.events.AddRange(events);
-                    }
-                }
-                if (events.Count > 10)
-                {
-                    events.RemoveRange(10, events.Count - 10);
+                    this.events.Add(iterator.Current);
                 }
             }
-            ui.ListEvents(events);
+            ui.ListEvents(this.events);
         }
         public List<CalendarEventBasic> GetEvents() => events;
     }
