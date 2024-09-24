@@ -10,8 +10,8 @@ Calendar client-server application with CLI.
 - Examples
 - Troubleshooting
 - Additional Resources
-
-
+  
+  
 
 ### Introduction
 
@@ -28,12 +28,14 @@ In repository are available Visual Studio solutions for both client("src/client/
 The Calendar Console Application supports various commands for managing user accounts and events . Below is a list of available commands:
 
 Non-logged-in:
+
 - `help`: Shows the help information for available commands.
 - `createUser`: Creates a new user in the calendar system.
 - `login:` Logs the user into the calendar system.
 - `exit`: Exits the application.
 
 Logged-in:
+
 - `help`: Shows the help information for available commands.
 - `logout`: Logs the user out of the calendar system.
 - `changeName`: Changes the name of the current user.
@@ -53,18 +55,19 @@ Logged-in:
 For entering commands is available tab completion and navigating through history with UpArrow and DownArrow
 
 ### Examples
+
 Here are some examples of how to use the Calendar Console Application:
 
 Add new event:
 `login`
 After entering command the dialog starts:
+
 ```
 Name:
 user
 Password:
 ...
 ```
-
 
 ### Troubleshooting
 
@@ -73,9 +76,9 @@ If you encounter any issues while using the Calendar Console Application, consid
 - Double-check the command syntax and arguments.
 - Ensure that connection to server is available.
 
-
 ### Additional Resources
+
 For more information and assistance, you can refer to the following resources:
 
 Documentation: [Full Documentation](https://jevcakj.github.io/csharp-calendar/)
-Contact Support: [Mail](janjevca@seznam.cz)
+Contact Support: [Mail](janjevcak@seznam.cz)
