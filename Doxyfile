@@ -965,10 +965,10 @@ WARN_LOGFILE           =
 # spaces. See also FILE_PATTERNS and EXTENSION_MAPPING
 # Note: If this tag is empty the current directory is searched.
 
-INPUT                  = C:/Users/janje/source/repos/csharp-calendar/src/client/ \
-                         C:/Users/janje/source/repos/csharp-calendar/src/common/ \
-                         C:/Users/janje/source/repos/csharp-calendar/src/server/ \
-                         C:/Users/janje/source/repos/csharp-calendar/docs/main.md
+INPUT                  = /src/client/ \
+                         /src/common/ \
+                         /src/server/ \
+                         /docs/main.md
 
 # This tag can be used to specify the character encoding of the source files
 # that Doxygen parses. Internally Doxygen uses the UTF-8 encoding. Doxygen uses
