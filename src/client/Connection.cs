@@ -61,7 +61,7 @@ namespace CalendarClient
         /// <summary>
         /// Retrieves all calendar events for the current user.
         /// </summary>
-        /// <returns>Returns an IEventList which can retrieve the basic details of calendar events.</returns>
+        /// <returns>Returns an IEvent which can retrieve the basic details of calendar events.</returns>
         public IEvents<CalendarEventBasic> GetEvents();
 
         /// <summary>
@@ -87,7 +87,7 @@ namespace CalendarClient
         /// Supports only comparing date of the event beginning.
         /// </summary>
         /// <param name="expression">The predicate expression used to filter the events.</param>
-        /// <returns>Returns a filtered IEventS containing events that match the predicate.</returns>
+        /// <returns>Returns a filtered IEvents containing events that match the predicate.</returns>
 
         public IEvents<T> Where(Expression<Predicate<T>> expression);
     }
